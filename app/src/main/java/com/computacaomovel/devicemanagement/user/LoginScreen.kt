@@ -26,7 +26,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
-fun LoginScreen(userViewModel: UserViewModel = viewModel()) {
+fun LoginScreen(
+    userViewModel: UserViewModel = viewModel(),
+    onGoogleSignIn: () -> Unit
+) {
     // Estados para guardar os valores dos campos de username e password
     val username = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
@@ -55,8 +58,7 @@ fun LoginScreen(userViewModel: UserViewModel = viewModel()) {
                 label = { Text(text = "Username") }, // Tag para o campo de texto
                 modifier = Modifier
                     .fillMaxWidth(0.85f), // Preenche 85% da largura
-                keyboardOptions = KeyboardOptions.Default.copy (
-                ),
+                keyboardOptions = KeyboardOptions.Default.copy(),
                 textStyle = TextStyle(
                     textAlign = TextAlign.Center, // Centra o texto dentro do campo
                     fontSize = 18.sp // Define o tamanho da fonte para 18sp
@@ -83,19 +85,30 @@ fun LoginScreen(userViewModel: UserViewModel = viewModel()) {
                 maxLines = 1 // Limita a entrada a uma linha
             )
 
-
-
             Spacer(modifier = Modifier.height(16.dp)) // Adiciona espaço entre o campo de password e o botão de login
 
             // Botão de login
             Button(
                 onClick = {
-                    userViewModel.authenticate(username.value, password.value) // Chama a função de auth no userViewModel (firebase e com valores hardcoded)
+                    userViewModel.authenticate(username.value, password.value) // Chama a função de auth no userViewModel (Firebase e com valores hardcoded)
                 },
                 modifier = Modifier.fillMaxWidth(0.75f) // Preenche 75% da largura
             ) {
                 Text("Login") // Texto dentro do botão
             }
+
+            Spacer(modifier = Modifier.height(16.dp)) // Adiciona espaço entre o botão e o próximo componente
+
+            // Botão de autenticação com Google
+            Button(
+                onClick = {
+                    onGoogleSignIn() // Chama a função fornecida para autenticação com o Google
+                },
+                modifier = Modifier.fillMaxWidth(0.75f) // Preenche 75% da largura
+            ) {
+                Text("Sign in with Google") // Texto dentro do botão
+            }
+
             Spacer(modifier = Modifier.height(16.dp)) // Adiciona espaço entre o botão e a mensagem de resultado
 
             // Exibe a mensagem de resultado (ex: sucesso ou não sucesso)

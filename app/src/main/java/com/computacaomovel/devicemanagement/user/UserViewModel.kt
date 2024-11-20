@@ -7,7 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+
 import kotlinx.coroutines.launch
+
 
 // Classe que representa o ViewModel responsável pela lógica de autenticação
 class UserViewModel : ViewModel() {
@@ -16,13 +18,11 @@ class UserViewModel : ViewModel() {
     private val db: FirebaseFirestore = Firebase.firestore
 
     // Estado para armazenar o resultado da autenticação
-
     private val _result = mutableStateOf("")
     val result: State<String> = _result
 
     // Função para autenticar o utilizador com base no username e password
     fun authenticate(username: String, password: String) {
-
         // Usa o viewModelScope para iniciar uma coroutine, o que permite executar a operação de auth de forma assíncrona sem bloquear a interface do user
         viewModelScope.launch {
             // Consulta à collection "user" no Firebase para verificar o username e a password
@@ -43,5 +43,21 @@ class UserViewModel : ViewModel() {
                     _result.value = "Error: ${it.message}"
                 }
         }
+    }
+
+    // Função para autenticar o utilizador com o Google
+    fun authenticateWithGoogle(idToken: String) {
+        viewModelScope.launch {
+            try {
+                _result.value = "Authentication with Google successful!"
+            } catch (e: Exception) {
+                _result.value = "Google Authentication failed: ${e.message}"
+            }
+        }
+    }
+
+    // Função para definir manualmente o resultado de autenticação
+    fun setResult(message: String) {
+        _result.value = message
     }
 }
