@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "671613896558",
+    "project_id": "device-management-ae88c",
+    "storage_bucket": "device-management-ae88c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:671613896558:android:66f5c5bd76cf7a1e93237f",
+        "android_client_info": {
+          "package_name": "com.computacaomovel.devicemanagement"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCxNSDYpdHlxO3oB5hBWanW5FmmckBgirc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
