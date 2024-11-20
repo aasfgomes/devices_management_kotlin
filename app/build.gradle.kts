@@ -1,10 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-<<<<<<< HEAD
-
     id("com.google.gms.google-services")
-    // id("com.android.application") -> cria uma erro de compilacão ao fazer sync do gradle
 }
 
 android {
@@ -14,19 +11,7 @@ android {
     defaultConfig {
         applicationId = "com.computacaomovel.devicemanagement"
         minSdk = 33
-        targetSdk = 33
-=======
-}
-
-android {
-    namespace = "project.devices_management"
-    compileSdk = 34
-
-    defaultConfig {
-        applicationId = "project.devices_management"
-        minSdk = 33
-        targetSdk = 34
->>>>>>> a530a6916f554091e7c98c97988f2f97b0dae3c4
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -66,7 +51,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -75,10 +59,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-<<<<<<< HEAD
     implementation(libs.firebase.firestore.ktx)
-=======
->>>>>>> a530a6916f554091e7c98c97988f2f97b0dae3c4
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -86,15 +67,11 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-<<<<<<< HEAD
 
     // Compose dependencies
-    implementation ("androidx.compose.ui:ui:1.5.1")
-    implementation ("androidx.compose.material3:material3:1.1.0")
-    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
+    implementation("androidx.compose.ui:ui:1.5.1")
+    implementation("androidx.compose.material3:material3:1.1.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
 
     implementation(libs.firebase.bom)
-
-=======
->>>>>>> a530a6916f554091e7c98c97988f2f97b0dae3c4
 }

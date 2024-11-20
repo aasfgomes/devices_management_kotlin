@@ -17,9 +17,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,7 +31,6 @@ fun LoginScreen(userViewModel: UserViewModel = viewModel()) {
     val username = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
     val result = userViewModel.result
-    val focusManager = LocalFocusManager.current
 
     // Container principal para o ecrã de login
     Column(
@@ -73,12 +72,18 @@ fun LoginScreen(userViewModel: UserViewModel = viewModel()) {
                 label = { Text(text = "Password") }, // Tag para o campo de texto
                 modifier = Modifier
                     .fillMaxWidth(0.85f), // Preenche 85% da largura
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Password // Define o tipo de teclado para password
+                ),
+                visualTransformation = PasswordVisualTransformation(), // Oculta a senha com bolinhas
                 textStyle = TextStyle(
                     textAlign = TextAlign.Center, // Centra o texto dentro do campo
                     fontSize = 18.sp // Define o tamanho da fonte para 18sp
                 ),
                 maxLines = 1 // Limita a entrada a uma linha
             )
+
+
 
             Spacer(modifier = Modifier.height(16.dp)) // Adiciona espaço entre o campo de password e o botão de login
 

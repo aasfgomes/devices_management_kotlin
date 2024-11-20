@@ -19,9 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-<<<<<<< HEAD
 rootProject.name = "Device Management"
-=======
-rootProject.name = "devices_management"
->>>>>>> a530a6916f554091e7c98c97988f2f97b0dae3c4
 include(":app")
