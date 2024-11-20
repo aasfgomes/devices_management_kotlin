@@ -10,13 +10,21 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+<<<<<<< HEAD
         android:theme="@style/Theme.DeviceManagement"
+=======
+        android:theme="@style/Theme.Devices_management"
+>>>>>>> a530a6916f554091e7c98c97988f2f97b0dae3c4
         tools:targetApi="31">
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
+<<<<<<< HEAD
             android:theme="@style/Theme.DeviceManagement">
+=======
+            android:theme="@style/Theme.Devices_management">
+>>>>>>> a530a6916f554091e7c98c97988f2f97b0dae3c4
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
