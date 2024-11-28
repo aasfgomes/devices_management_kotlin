@@ -1,119 +1,209 @@
 package com.computacaomovel.devicemanagement.user
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.computacaomovel.devicemanagement.R
+import androidx.compose.foundation.BorderStroke
 
 @Composable
-fun UserRegisterScreen(userViewModel: UserViewModel = viewModel(), onBackToLogin: () -> Unit = {}) {
-    // Estados para guardar os valores dos campos de username, password e email
+fun UserRegisterScreen(
+    userViewModel: UserViewModel = viewModel(),
+    onBackToLogin: () -> Unit = {}
+) {
     val username = remember { mutableStateOf("") }
-    val password = remember { mutableStateOf("") }
     val email = remember { mutableStateOf("") }
+    val password = remember { mutableStateOf("") }
+    val confirmPassword = remember { mutableStateOf("") }
     val result = userViewModel.result
 
-    // Container principal para o ecrã de registo
-    Column(
-        modifier = Modifier
-            .fillMaxSize() // Preenche o tamanho do ecrã
-            .padding(16.dp), // Adiciona um padding ao conteúdo
-        horizontalAlignment = Alignment.CenterHorizontally, // Centra o conteúdo horizontalmente
-        verticalArrangement = Arrangement.Center // Posiciona o conteúdo ao centro de forma vertical
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
     ) {
-        // Título do ecrã de registo
-        Text(
-            text = "Registo",
-            style = TextStyle(fontSize = 32.sp, textAlign = TextAlign.Center),
-            modifier = Modifier.padding(bottom = 24.dp) // Adiciona espaçamento abaixo do título
-        )
-
-        // Campo do username
-        OutlinedTextField(
-            value = username.value, // Valor atual do campo de username
-            onValueChange = { username.value = it }, // Atualiza o estado quando o valor muda
-            label = { Text(text = "Username") }, // Tag para o campo de texto
-            modifier = Modifier.fillMaxWidth(0.85f), // Preenche 85% da largura
-            textStyle = TextStyle(textAlign = TextAlign.Center, fontSize = 18.sp),
-            maxLines = 1 // Limita a entrada a uma linha no campo
-        )
-        Spacer(modifier = Modifier.height(16.dp)) // Adiciona espaço entre os campos
-
-        // Campo do email
-        OutlinedTextField(
-            value = email.value, // Valor atual do campo de email
-            onValueChange = { email.value = it }, // Atualiza o estado quando o valor muda
-            label = { Text(text = "Email") }, // Tag para o campo de texto
-            modifier = Modifier.fillMaxWidth(0.85f), // Preenche 85% da largura
-            textStyle = TextStyle(textAlign = TextAlign.Center, fontSize = 18.sp),
-            maxLines = 1 // Limita a entrada a uma linha no campo
-        )
-        Spacer(modifier = Modifier.height(16.dp)) // Adiciona espaço entre os campos
-
-        // Campo de entrada para a password
-        OutlinedTextField(
-            value = password.value, // Valor atual do campo de password
-            onValueChange = { password.value = it }, // Atualiza o estado quando o valor muda
-            label = { Text(text = "Password") }, // Tag para o campo de texto
-            modifier = Modifier.fillMaxWidth(0.85f), // Preenche 85% da largura
-            keyboardOptions = KeyboardOptions.Default.copy(
-                keyboardType = KeyboardType.Password // Define o tipo de teclado para a password
-            ),
-            visualTransformation = PasswordVisualTransformation(), // Oculta a senha com bolinhas
-            textStyle = TextStyle(textAlign = TextAlign.Center, fontSize = 18.sp),
-            maxLines = 1 // Limita a entrada a uma linha
-        )
-
-        Spacer(modifier = Modifier.height(16.dp)) // Adiciona espaço entre o campo de password e o botão de registo
-
-        // Botão de registo
-        Button(
-            onClick = {
-                userViewModel.registerNewUser(username.value, password.value, email.value) // Chama a função de registo do userViewModel
-            },
-            modifier = Modifier.fillMaxWidth(0.75f) // Preenche 75% da largura
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Text("Registar") // Texto dentro do botão
-        }
-        Spacer(modifier = Modifier.height(16.dp)) // Adiciona espaço entre o botão de registo e o botão de voltar
-
-        // Botão de voltar para a página de login
-        Button(
-            onClick = onBackToLogin,
-            modifier = Modifier.fillMaxWidth(0.75f) // Preenche 75% da largura
-        ) {
-            Text("Voltar para o Login") // Texto dentro do botão
-        }
-
-        Spacer(modifier = Modifier.height(16.dp)) // Adiciona espaço entre o botão e a mensagem de resultado
-
-        // Exibe a mensagem de resultado (ex: sucesso ou não sucesso)
-        if (result.value.isNotEmpty()) {
-            Text(
-                text = result.value, // Mostra a mensagem de resultado
-                color = if (result.value.contains("successful", true)) Color.Black else Color.Red, // Altera a cor com base na mensagem
-                fontSize = 14.sp // Define o tamanho da fonte para 14sp
+            // Logo no topo
+            val logo: Painter = painterResource(id = R.drawable.onis_logo)
+            Image(
+                painter = logo,
+                contentDescription = "Logo Omatapalo",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .size(120.dp)
+                    .padding(bottom = 24.dp)
             )
+
+            // Título do Registo
+            Text(
+                text = "Cria conta",
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    textAlign = TextAlign.Center
+                ),
+                modifier = Modifier.padding(bottom = 24.dp)
+            )
+
+            // Campo de Username
+            OutlinedTextField(
+                value = username.value,
+                onValueChange = { username.value = it },
+                label = { Text("Username") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                textStyle = TextStyle(
+                    textAlign = TextAlign.Start,
+                    fontSize = 18.sp
+                ),
+                shape = RoundedCornerShape(16.dp),
+                maxLines = 1,
+                singleLine = true
+            )
+
+            // Campo de Email
+            OutlinedTextField(
+                value = email.value,
+                onValueChange = { email.value = it },
+                label = { Text("Email") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                textStyle = TextStyle(
+                    textAlign = TextAlign.Start,
+                    fontSize = 18.sp
+                ),
+                shape = RoundedCornerShape(16.dp),
+                maxLines = 1,
+                singleLine = true
+            )
+
+            // Campo de Password
+            OutlinedTextField(
+                value = password.value,
+                onValueChange = { password.value = it },
+                label = { Text("Password") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Password
+                ),
+                visualTransformation = PasswordVisualTransformation(),
+                textStyle = TextStyle(
+                    textAlign = TextAlign.Start,
+                    fontSize = 18.sp
+                ),
+                shape = RoundedCornerShape(16.dp),
+                maxLines = 1,
+                singleLine = true
+            )
+
+            // Campo para Confirmar Password
+            OutlinedTextField(
+                value = confirmPassword.value,
+                onValueChange = { confirmPassword.value = it },
+                label = { Text("Confirmar Password") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Password
+                ),
+                visualTransformation = PasswordVisualTransformation(),
+                textStyle = TextStyle(
+                    textAlign = TextAlign.Start,
+                    fontSize = 18.sp
+                ),
+                shape = RoundedCornerShape(16.dp),
+                maxLines = 1,
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Botão de Registo
+            Button(
+                onClick = {
+                    if (password.value == confirmPassword.value) {
+                        userViewModel.registerNewUser(username.value, password.value, email.value)
+                    } else {
+                        userViewModel.updateResultMessage("As passwords não são iguais")
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth(0.7f)
+                    .padding(vertical = 8.dp)
+                    .height(50.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Text(
+                    text = "Registar",
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        color = Color.White,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                )
+            }
+
+            // Botão de Voltar ao Login
+            OutlinedButton(
+                onClick = onBackToLogin,
+                modifier = Modifier
+                    .fillMaxWidth(0.7f)
+                    .padding(vertical = 8.dp)
+                    .height(50.dp),
+                shape = RoundedCornerShape(16.dp),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+            ) {
+                Text(
+                    text = "Voltar para o Login",
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                )
+            }
+
+            // Mensagem de resultado
+            if (result.value.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = result.value,
+                    color = if (result.value.contains("successful", true)) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
     }
 }

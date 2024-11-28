@@ -1,6 +1,5 @@
 package com.computacaomovel.devicemanagement
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -8,9 +7,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import com.computacaomovel.devicemanagement.home.HomeScreen
+import androidx.lifecycle.Observer
 import com.computacaomovel.devicemanagement.user.*
+import com.computacaomovel.devicemanagement.home.HomeScreen
 import com.computacaomovel.devicemanagement.ui.theme.DeviceManagementTheme
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -30,11 +31,28 @@ class MainActivity : ComponentActivity() {
 
         googleSignInClient = GoogleSignIn.getClient(this, gso)
 
+        // Observar o estado de autenticação
+        userViewModel.isAuthenticated.observe(this, Observer { isAuthenticated ->
+            // Após a autenticação bem-sucedida, renderizar o HomeScreen
+            if (isAuthenticated) {
+                setContent {
+                    DeviceManagementTheme {
+                        HomeScreen() // Mostrar HomeScreen quando autenticado
+                    }
+                }
+            }
+        })
+
         setContent {
             DeviceManagementTheme {
+                var showRegisterScreen by remember { mutableStateOf(false) }
+
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                    if (userViewModel.isAuthenticated.value == true) {
-                        HomeScreen() // Mostra o HomeScreen após autenticação
+                    if (showRegisterScreen) {
+                        UserRegisterScreen(
+                            userViewModel = userViewModel,
+                            onBackToLogin = { showRegisterScreen = false }
+                        )
                     } else {
                         LoginScreen(
                             userViewModel = userViewModel,
@@ -42,8 +60,7 @@ class MainActivity : ComponentActivity() {
                                 signInWithGoogle()
                             },
                             onRegister = {
-                                val intent = Intent(this, RegisterActivity::class.java)
-                                startActivity(intent)
+                                showRegisterScreen = true
                             }
                         )
                     }
