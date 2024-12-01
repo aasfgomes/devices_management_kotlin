@@ -26,8 +26,8 @@ import com.computacaomovel.devicemanagement.R
 import androidx.compose.foundation.BorderStroke
 
 /**
- * Tela de Registo de Usuário.
- * Permite que os utilizadores criem uma conta preenchendo os campos necessários.
+ * ecrã de registo dos user
+ * Permite que os users criem uma conta preenchendo os campos necessários.
  *
  * @param userViewModel ViewModel responsável pela lógica que envolve o user
  * @param onBackToLogin Callback para navegar de volta ao ecrã de login.
