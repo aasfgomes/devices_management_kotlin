@@ -25,17 +25,27 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.computacaomovel.devicemanagement.R
 import androidx.compose.foundation.BorderStroke
 
+/**
+ * Tela de Registo de Usuário.
+ * Permite que os utilizadores criem uma conta preenchendo os campos necessários.
+ *
+ * @param userViewModel ViewModel responsável pela lógica que envolve o user
+ * @param onBackToLogin Callback para navegar de volta ao ecrã de login.
+ */
+
 @Composable
 fun UserRegisterScreen(
-    userViewModel: UserViewModel = viewModel(),
-    onBackToLogin: () -> Unit = {}
+    userViewModel: UserViewModel = viewModel(), // Chama o ViewModel
+    onBackToLogin: () -> Unit = {} // Callback para voltar á página de login
 ) {
-    val username = remember { mutableStateOf("") }
-    val email = remember { mutableStateOf("") }
-    val password = remember { mutableStateOf("") }
-    val confirmPassword = remember { mutableStateOf("") }
-    val result = userViewModel.result
+    // Variáveis para armazenar os inputs do user
+    val username = remember { mutableStateOf("") } // Nome de user
+    val email = remember { mutableStateOf("") } // Email
+    val password = remember { mutableStateOf("") } // Password
+    val confirmPassword = remember { mutableStateOf("") } // Confirmação de Password
+    val result = userViewModel.result // Resultado
 
+    // Layout principal do ecrã
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -47,18 +57,18 @@ fun UserRegisterScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Logo no topo
+            // Logótipo
             val logo: Painter = painterResource(id = R.drawable.onis_logo)
             Image(
                 painter = logo,
                 contentDescription = "Logo Omatapalo",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
-                    .size(120.dp)
+                    .size(120.dp) // Tamanho da imagem
                     .padding(bottom = 24.dp)
             )
 
-            // Título do Registo
+            // Título do registo
             Text(
                 text = "Cria conta",
                 style = MaterialTheme.typography.headlineMedium.copy(
@@ -69,11 +79,11 @@ fun UserRegisterScreen(
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
-            // Campo de Username
+            // Campo de input para o nome de user
             OutlinedTextField(
-                value = username.value,
-                onValueChange = { username.value = it },
-                label = { Text("Username") },
+                value = username.value, // Valor atual
+                onValueChange = { username.value = it }, // Atualiza o valor
+                label = { Text("Username") }, // Label do campo
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp),
@@ -82,11 +92,11 @@ fun UserRegisterScreen(
                     fontSize = 18.sp
                 ),
                 shape = RoundedCornerShape(16.dp),
-                maxLines = 1,
-                singleLine = true
+                maxLines = 1, // Apenas 1 linha
+                singleLine = true // Define que é uma única linha
             )
 
-            // Campo de Email
+            // Campo de input para o email
             OutlinedTextField(
                 value = email.value,
                 onValueChange = { email.value = it },
@@ -103,7 +113,7 @@ fun UserRegisterScreen(
                 singleLine = true
             )
 
-            // Campo de Password
+            // Campo de input para a password
             OutlinedTextField(
                 value = password.value,
                 onValueChange = { password.value = it },
@@ -112,9 +122,9 @@ fun UserRegisterScreen(
                     .fillMaxWidth()
                     .padding(vertical = 8.dp),
                 keyboardOptions = KeyboardOptions.Default.copy(
-                    keyboardType = KeyboardType.Password
+                    keyboardType = KeyboardType.Password // Teclado específico para passwords
                 ),
-                visualTransformation = PasswordVisualTransformation(),
+                visualTransformation = PasswordVisualTransformation(), // Oculta a password
                 textStyle = TextStyle(
                     textAlign = TextAlign.Start,
                     fontSize = 18.sp
@@ -124,7 +134,7 @@ fun UserRegisterScreen(
                 singleLine = true
             )
 
-            // Campo para Confirmar Password
+            // Campo de input para confirmar a password
             OutlinedTextField(
                 value = confirmPassword.value,
                 onValueChange = { confirmPassword.value = it },
@@ -147,12 +157,14 @@ fun UserRegisterScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Botão de Registo
+            // Botão para registar o utilizador
             Button(
                 onClick = {
                     if (password.value == confirmPassword.value) {
+                        // Regista o user se as passwords forem iguais
                         userViewModel.registerNewUser(username.value, password.value, email.value)
                     } else {
+                        // Atualiza a mensagem de erro se as passwords forem diferentes
                         userViewModel.updateResultMessage("As passwords não são iguais")
                     }
                 },
@@ -168,15 +180,15 @@ fun UserRegisterScreen(
                 Text(
                     text = "Registar",
                     style = MaterialTheme.typography.bodyLarge.copy(
-                        color = Color.White,
+                        color = Color.White, // Texto branco
                         fontWeight = FontWeight.SemiBold
                     )
                 )
             }
 
-            // Botão de Voltar ao Login
+            // Botão para voltar para a página  login
             OutlinedButton(
-                onClick = onBackToLogin,
+                onClick = onBackToLogin, // Callback para navegar
                 modifier = Modifier
                     .fillMaxWidth(0.7f)
                     .padding(vertical = 8.dp)
@@ -193,12 +205,15 @@ fun UserRegisterScreen(
                 )
             }
 
-            // Mensagem de resultado
+            // Mensagem de resultado (sucesso ou erro)
             if (result.value.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp)) // Espaçamento
                 Text(
-                    text = result.value,
-                    color = if (result.value.contains("successful", true)) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                    text = result.value, // Mensagem de resultado
+                    color = if (result.value.contains("successful", true))
+                        MaterialTheme.colorScheme.primary // Sucesso
+                    else
+                        MaterialTheme.colorScheme.error, // Erro
                     fontSize = 14.sp,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()

@@ -27,6 +27,23 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.computacaomovel.devicemanagement.R
 
+
+//
+// - .fillMaxSize(): Faz com que o elemento ocupe o espaco que existe.
+// - .fillMaxWidth(): Faz com que o elemento ocupe toda a largura disponível.
+// - .padding(): Adiciona espaçamento á volta de um elemento.
+// - .align(): Alinha o elemento dentro de um container .
+// - .size(): Define o tamanho fixo de um elemento.
+// - .background(): Define a cor ou forma de fundo de um elemento.
+// - Spacer(): Insere um espaço vazio entre elementos que é usado para separação.
+// - RoundedCornerShape(): Define bordas arredondadas para botões ou caixas.
+// - ButtonDefaults.buttonColors(): Permite personalizar as cores dos botões.
+// - OutlinedTextField(): Campo de texto com borda e rótulo acima.
+// - PasswordVisualTransformation(): Esconde os caracteres escritos e ficam em formatos de bolinhas (para campos de senha).
+// - Surface(): Container que suporta cores e temas do Material Design.
+// - Column(): Layout que organiza elementos verticalmente, um em baixo do outro.
+//
+
 @Composable
 fun LoginScreen(
     userViewModel: UserViewModel = viewModel(),
@@ -146,11 +163,11 @@ fun LoginScreen(
                 )
             }
 
-            // Botão de Login com Google (com borda)
+            // Botão Login Google
             Button(
                 onClick = onGoogleSignIn,
                 modifier = Modifier
-                    .fillMaxWidth(0.7f) // Botão menor que as caixas de texto
+                    .fillMaxWidth(0.7f) // Botão fica mais pequeno que as caixas de texto
                     .padding(vertical = 8.dp)
                     .height(50.dp),
                 shape = RoundedCornerShape(16.dp),
@@ -174,11 +191,11 @@ fun LoginScreen(
                 )
             }
 
-            // Botão de Registo
+            // Botão para fazer o registo
             OutlinedButton(
                 onClick = onRegister,
                 modifier = Modifier
-                    .fillMaxWidth(0.7f) // Botão menor que as caixas de texto
+                    .fillMaxWidth(0.7f) // Botão fica mais pequeno que as caixas de texto
                     .padding(vertical = 8.dp)
                     .height(50.dp),
                 shape = RoundedCornerShape(16.dp)

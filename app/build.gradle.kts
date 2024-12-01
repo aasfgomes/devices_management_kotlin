@@ -65,7 +65,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:32.0.0"))
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-auth-ktx")
-    implementation("com.google.android.gms:play-services-auth:20.5.0")
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
     implementation(libs.androidx.runtime.livedata)
 
     // Dependências de testes
@@ -90,5 +90,9 @@ dependencies {
     implementation ("androidx.navigation:navigation-compose:2.6.0")
     implementation ("org.bouncycastle:bcprov-jdk15on:1.70")
 
+    val nav_version = "2.8.2"
+    implementation("androidx.navigation:navigation-compose:$nav_version")
+    val compose_material_version = "1.7.3"
+    implementation("androidx.compose.material:material:$compose_material_version")
 
 }

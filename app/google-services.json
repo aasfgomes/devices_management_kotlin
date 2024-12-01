@@ -12,7 +12,12 @@
           "package_name": "com.computacaomovel.devicemanagement"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "671613896558-a7tva0sjkj6fea0avhrp0f5vnfq2celd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCxNSDYpdHlxO3oB5hBWanW5FmmckBgirc"
@@ -20,7 +25,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "671613896558-a7tva0sjkj6fea0avhrp0f5vnfq2celd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
