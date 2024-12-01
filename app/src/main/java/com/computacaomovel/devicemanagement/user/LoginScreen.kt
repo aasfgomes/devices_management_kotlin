@@ -140,10 +140,12 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Botão de Login
             Button(
                 onClick = {
-                    userViewModel.authenticate(username.value, password.value)
+                    userViewModel.authenticate(username.value, password.value) {
+                        // Aqui você pode definir o comportamento ao autenticar com sucesso
+                        // Exemplo: redirecionar para a tela principal ou uma ação específica
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth(0.7f) // Botão menor que as caixas de texto

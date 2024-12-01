@@ -31,12 +31,14 @@ import androidx.compose.foundation.BorderStroke
  *
  * @param userViewModel ViewModel responsável pela lógica que envolve o user
  * @param onBackToLogin Callback para navegar de volta ao ecrã de login.
+ * @param onRegister Callback para quando o registo for bem-sucedido.
  */
 
 @Composable
 fun UserRegisterScreen(
     userViewModel: UserViewModel = viewModel(), // Chama o ViewModel
-    onBackToLogin: () -> Unit = {} // Callback para voltar á página de login
+    onBackToLogin: () -> Unit = {}, // Callback para voltar á página de login
+    onRegister: () -> Unit = {} // Callback para quando o registo for bem-sucedido
 ) {
     // Variáveis para armazenar os inputs do user
     val username = remember { mutableStateOf("") } // Nome de user
@@ -162,7 +164,10 @@ fun UserRegisterScreen(
                 onClick = {
                     if (password.value == confirmPassword.value) {
                         // Regista o user se as passwords forem iguais
-                        userViewModel.registerNewUser(username.value, password.value, email.value)
+                        userViewModel.registerNewUser(username.value, password.value, email.value) {
+                            // Redireciona para a página de login ao sucesso
+                            onBackToLogin() // Chama a função para navegar para o login após registo bem-sucedido
+                        }
                     } else {
                         // Atualiza a mensagem de erro se as passwords forem diferentes
                         userViewModel.updateResultMessage("As passwords não são iguais")
@@ -186,7 +191,7 @@ fun UserRegisterScreen(
                 )
             }
 
-            // Botão para voltar para a página  login
+            // Botão para voltar para a página de login
             OutlinedButton(
                 onClick = onBackToLogin, // Callback para navegar
                 modifier = Modifier
@@ -222,3 +227,4 @@ fun UserRegisterScreen(
         }
     }
 }
+
