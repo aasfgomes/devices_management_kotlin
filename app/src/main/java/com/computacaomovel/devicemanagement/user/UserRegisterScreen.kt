@@ -47,7 +47,7 @@ fun UserRegisterScreen(
     val confirmPassword = remember { mutableStateOf("") } // Confirmação de Password
     val result = userViewModel.result // Resultado
 
-    // Layout principal do ecrã
+    // Layout principal do ecra
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -126,7 +126,7 @@ fun UserRegisterScreen(
                 keyboardOptions = KeyboardOptions.Default.copy(
                     keyboardType = KeyboardType.Password // Teclado específico para passwords
                 ),
-                visualTransformation = PasswordVisualTransformation(), // Oculta a password
+                visualTransformation = PasswordVisualTransformation(), // Oculta a password com bolinhas
                 textStyle = TextStyle(
                     textAlign = TextAlign.Start,
                     fontSize = 18.sp
@@ -165,8 +165,8 @@ fun UserRegisterScreen(
                     if (password.value == confirmPassword.value) {
                         // Regista o user se as passwords forem iguais
                         userViewModel.registerNewUser(username.value, password.value, email.value) {
-                            // Redireciona para a página de login ao sucesso
-                            onBackToLogin() // Chama a função para navegar para o login após registo bem-sucedido
+                            // Redireciona para a página de login se sucesso
+                            onBackToLogin() // Chama a função para navegar para o login após o registo bem-sucedido
                         }
                     } else {
                         // Atualiza a mensagem de erro se as passwords forem diferentes

@@ -27,28 +27,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.computacaomovel.devicemanagement.R
 
-
-//
-// - .fillMaxSize(): Faz com que o elemento ocupe o espaco que existe.
-// - .fillMaxWidth(): Faz com que o elemento ocupe toda a largura disponível.
-// - .padding(): Adiciona espaçamento á volta de um elemento.
-// - .align(): Alinha o elemento dentro de um container .
-// - .size(): Define o tamanho fixo de um elemento.
-// - .background(): Define a cor ou forma de fundo de um elemento.
-// - Spacer(): Insere um espaço vazio entre elementos que é usado para separação.
-// - RoundedCornerShape(): Define bordas arredondadas para botões ou caixas.
-// - ButtonDefaults.buttonColors(): Permite personalizar as cores dos botões.
-// - OutlinedTextField(): Campo de texto com borda e rótulo acima.
-// - PasswordVisualTransformation(): Esconde os caracteres escritos e ficam em formatos de bolinhas (para campos de senha).
-// - Surface(): Container que suporta cores e temas do Material Design.
-// - Column(): Layout que organiza elementos verticalmente, um em baixo do outro.
-//
-
 @Composable
 fun LoginScreen(
     userViewModel: UserViewModel = viewModel(),
     onGoogleSignIn: () -> Unit,
-    onRegister: () -> Unit
+    onRegister: () -> Unit,
+    onLoginSuccess: () -> Unit
 ) {
     val username = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
@@ -66,7 +50,7 @@ fun LoginScreen(
             verticalArrangement = Arrangement.Center
         ) {
             // Logo no topo
-            val logo: Painter = painterResource(id = R.drawable.onis_logo) // Logo caminho
+            val logo: Painter = painterResource(id = R.drawable.onis_logo)
             Box(
                 modifier = Modifier
                     .size(120.dp)
@@ -96,16 +80,12 @@ fun LoginScreen(
             OutlinedTextField(
                 value = username.value,
                 onValueChange = { username.value = it },
-                label = {
-                    Text(
-                        text = "Username"
-                    )
-                },
+                label = { Text(text = "Username") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp),
                 textStyle = TextStyle(
-                    textAlign = TextAlign.Start, // Alinha o texto à esquerda
+                    textAlign = TextAlign.Start,
                     fontSize = 18.sp
                 ),
                 shape = RoundedCornerShape(16.dp),
@@ -117,11 +97,7 @@ fun LoginScreen(
             OutlinedTextField(
                 value = password.value,
                 onValueChange = { password.value = it },
-                label = {
-                    Text(
-                        text = "Password"
-                    )
-                },
+                label = { Text(text = "Password") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp),
@@ -130,7 +106,7 @@ fun LoginScreen(
                 ),
                 visualTransformation = PasswordVisualTransformation(),
                 textStyle = TextStyle(
-                    textAlign = TextAlign.Start, // Alinha o texto à esquerda
+                    textAlign = TextAlign.Start,
                     fontSize = 18.sp
                 ),
                 shape = RoundedCornerShape(16.dp),
@@ -140,15 +116,15 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // Botão de Login
             Button(
                 onClick = {
                     userViewModel.authenticate(username.value, password.value) {
-                        // Aqui você pode definir o comportamento ao autenticar com sucesso
-                        // Exemplo: redirecionar para a tela principal ou uma ação específica
+                        onLoginSuccess() // Chama a função onLoginSuccess após login bem-sucedido
                     }
                 },
                 modifier = Modifier
-                    .fillMaxWidth(0.7f) // Botão menor que as caixas de texto
+                    .fillMaxWidth(0.7f)
                     .padding(vertical = 8.dp)
                     .height(50.dp),
                 shape = RoundedCornerShape(16.dp),
@@ -169,17 +145,17 @@ fun LoginScreen(
             Button(
                 onClick = onGoogleSignIn,
                 modifier = Modifier
-                    .fillMaxWidth(0.7f) // Botão fica mais pequeno que as caixas de texto
+                    .fillMaxWidth(0.7f)
                     .padding(vertical = 8.dp)
                     .height(50.dp),
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.White
                 ),
-                border = BorderStroke(1.dp, Color.Gray) // Adiciona uma borda cinza ao botão
+                border = BorderStroke(1.dp, Color.Gray)
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.ic_google), // Icon google
+                    painter = painterResource(id = R.drawable.ic_google),
                     contentDescription = "Google Logo",
                     modifier = Modifier.size(24.dp)
                 )
@@ -197,7 +173,7 @@ fun LoginScreen(
             OutlinedButton(
                 onClick = onRegister,
                 modifier = Modifier
-                    .fillMaxWidth(0.7f) // Botão fica mais pequeno que as caixas de texto
+                    .fillMaxWidth(0.7f)
                     .padding(vertical = 8.dp)
                     .height(50.dp),
                 shape = RoundedCornerShape(16.dp)

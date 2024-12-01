@@ -34,7 +34,7 @@ class UserViewModel : ViewModel() {
     val isAuthenticated: LiveData<Boolean> = _isAuthenticated
 
     // Estado para indicar se o user está registado
-    private val _isRegistered = MutableLiveData<Boolean>() // Estado de registro
+    private val _isRegistered = MutableLiveData<Boolean>() // Estado de registo
     val isRegistered: LiveData<Boolean> = _isRegistered
 
     /**
@@ -49,11 +49,12 @@ class UserViewModel : ViewModel() {
      * Autentica um user com base no username e password.
      * @param username Nome de user.
      * @param password Palavra-passe do user.
+     * @param onSuccess Callback a ser chamado em caso de sucesso.
      */
     fun authenticate(username: String, password: String, onSuccess: () -> Unit) {
         viewModelScope.launch {
             try {
-                val hashedPassword = hashPassword(password) // Hasheia a palavra-passe
+                val hashedPassword = hashPassword(password) // Hash para a pw
                 val documents = db.collection("user")
                     .whereEqualTo("username", username)
                     .whereEqualTo("password", hashedPassword)
@@ -77,6 +78,7 @@ class UserViewModel : ViewModel() {
     /**
      * Autentica o user com uma conta Google.
      * @param idToken Token de autenticação Google.
+     * @param onSuccess Callback a ser chamado em caso de sucesso.
      */
     fun authenticateWithGoogle(idToken: String, onSuccess: () -> Unit) {
         viewModelScope.launch {
@@ -99,6 +101,7 @@ class UserViewModel : ViewModel() {
      * @param username Nome de utilizador.
      * @param password Palavra-passe.
      * @param email Endereço de email do utilizador.
+     * @param onSuccess Callback a ser chamado em caso de sucesso.
      */
     fun registerNewUser(username: String, password: String, email: String, onSuccess: () -> Unit) {
         val hashedPassword = hashPassword(password) // Hasheia a palavra-passe
@@ -133,7 +136,7 @@ class UserViewModel : ViewModel() {
      */
     private fun hashPassword(password: String): String {
         val md = MessageDigest.getInstance("SHA-256") // Instância do SHA-256
-        val hash = md.digest(password.toByteArray()) // Hasheia os bytes da palavra-passe
+        val hash = md.digest(password.toByteArray()) // Hash os bytes da palavra-passe
         return hash.joinToString("") { "%02x".format(it) } // Retorna em formato hexadecimal
     }
 }

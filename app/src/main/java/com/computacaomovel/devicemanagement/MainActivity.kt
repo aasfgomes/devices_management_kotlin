@@ -46,10 +46,10 @@ class MainActivity : ComponentActivity() {
             DeviceManagementTheme {
                 val navController = rememberNavController()
 
-                // Observa o estado de autenticação do utilizador
+                // Observa o estado de autenticação do user
                 userViewModel.isAuthenticated.observe(this, Observer { isAuthenticated ->
                     if (isAuthenticated) {
-                        // Redireciona para o Ecra01 ao autenticar com sucesso
+                        // Vai para o Ecra 1 ao ser autenticado com sucesso
                         navController.navigate(Destino.Ecra01.route) {
                             popUpTo("login") { inclusive = true }
                         }
@@ -81,7 +81,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // Processo de autenticação do Google
+    // Processo de autenticação da Google
     private fun signInWithGoogle() {
         val signInIntent = googleSignInClient.signInIntent
         googleSignInLauncher.launch(signInIntent)
@@ -104,7 +104,12 @@ fun MainApp(
             }
         }
     ) { innerPadding ->
-        AppNavigation(navController = navController, onGoogleSignIn = onGoogleSignIn, padding = innerPadding)
+        AppNavigation(navController = navController, onGoogleSignIn = onGoogleSignIn, padding = innerPadding, onLoginSuccess = {
+            // Redireciona para o Ecra01 ao autenticar com sucesso
+            navController.navigate(Destino.Ecra01.route) {
+                popUpTo("login") { inclusive = true }
+            }
+        })
     }
 }
 
@@ -112,25 +117,27 @@ fun MainApp(
 fun AppNavigation(
     navController: NavHostController,
     onGoogleSignIn: () -> Unit,
-    padding: PaddingValues
+    padding: PaddingValues,
+    onLoginSuccess: () -> Unit
 ) {
     NavHost(navController, startDestination = "login") {
-        // Tela de Login
+        // Ecra de Login
         composable("login") {
             LoginScreen(
                 userViewModel = UserViewModel(),
                 onGoogleSignIn = onGoogleSignIn,
-                onRegister = { navController.navigate("register") }
+                onRegister = { navController.navigate("register") },
+                onLoginSuccess = onLoginSuccess
             )
         }
-        // Tela de Registro
+        // Ecra de registo
         composable("register") {
             UserRegisterScreen(
                 userViewModel = UserViewModel(),
                 onBackToLogin = { navController.popBackStack("login", inclusive = false) }
             )
         }
-        // Telas com navegação
+        // Ecras com navegação
         composable(Destino.Ecra01.route) { Ecra01() }
         composable(Destino.Ecra02.route) { Ecra02() }
         composable(Destino.Ecra03.route) { Ecra03() }
