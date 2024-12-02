@@ -30,13 +30,13 @@ import com.computacaomovel.devicemanagement.R
 /**
  * - Surface com fillMaxSize: O ecrã preenche o espaço disponivel.
  * - Column com padding horizontal e alinhamentos: A coluna centraliza os elementos e adiciona margens laterais.
- * - Image (Logótipo): Exibido com tamanho fixo e espaçamento inferior.
- * - Text (Título): Define o título "Cria conta" com tipografia e peso de fonte em negrito.
+ * - Image (Logótipo): Mostra com tamanho fixo e espaçamento inferior.
+ * - Text (Título): Define o título com type e peso da fonte a negrito.
  * - OutlinedTextField (Username, Email, Password, Confirmar Password): Campos de input com largura total, padding vertical e cantos arredondados.
- * - PasswordVisualTransformation: Oculta o texto dos campos de password.
+ * - PasswordVisualTransformation: Oculta o texto dos campos de password com bolinhas.
  * - Button (Registar): Botão principal para registo, ocupa 70% da largura disponível.
  * - OutlinedButton (Voltar para Login): Botão para navegar de volta, com uma borda visível.
- * - Mensagem de resultado: Exibe mensagens de sucesso ou erro após tentativas de registo.
+ * - Mensagem de resultado: Exibe mensagens de sucesso ou erro após tentar fazer o registo.
  * - fillMaxSize, fillMaxWidth: Usados para garantir que os elementos ocupam o máximo espaço disponível.
  * - padding: Aplicado para adicionar espaçamento entre elementos e melhorar a aparência visual.
  * - RoundedCornerShape: Define cantos arredondados para os campos e botões.

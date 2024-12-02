@@ -46,11 +46,12 @@ class UserViewModel : ViewModel() {
     }
 
     /**
-     * Autentica um user com base no username e password.
+     * Autentica um user com base no username e pw.
      * @param username Nome de user.
      * @param password Palavra-passe do user.
      * @param onSuccess Callback a ser chamado em caso de sucesso.
      */
+
     fun authenticate(username: String, password: String, onSuccess: () -> Unit) {
         viewModelScope.launch {
             try {
@@ -104,7 +105,7 @@ class UserViewModel : ViewModel() {
      * @param onSuccess Callback a ser chamado em caso de sucesso.
      */
     fun registerNewUser(username: String, password: String, email: String, onSuccess: () -> Unit) {
-        val hashedPassword = hashPassword(password) // Hasheia a palavra-passe
+        val hashedPassword = hashPassword(password) // Hash a pw
         auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 val user = hashMapOf(
@@ -119,7 +120,7 @@ class UserViewModel : ViewModel() {
                         onSuccess() // Executa a ação de sucesso
                     }
                     .addOnFailureListener {
-                        _result.value = "Registration failed: ${it.message}" // Falha no Firestore
+                        _result.value = "Registration failed: ${it.message}" // Falha no firebase
                         _isRegistered.value = false
                     }
             } else {
@@ -130,10 +131,11 @@ class UserViewModel : ViewModel() {
     }
 
     /**
-     * Hasheia a password usando SHA-256 para maior segurança.
-     * @param password Palavra-passe.
-     * @return Palavra-passe hasheada.
+     * Hash para password SHA-256.
+     * @param password pw.
+     * @return Palavra-passe já encriptada.
      */
+
     private fun hashPassword(password: String): String {
         val md = MessageDigest.getInstance("SHA-256") // Instância do SHA-256
         val hash = md.digest(password.toByteArray()) // Hash os bytes da palavra-passe
