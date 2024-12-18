@@ -11,6 +11,7 @@ import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.res.painterResource
 import androidx.lifecycle.Observer
 import androidx.navigation.NavController
@@ -100,12 +101,22 @@ class MainActivity : ComponentActivity() {
         userViewModel: UserViewModel,
         onGoogleSignIn: () -> Unit
     ) {
-        val currentRoute by navController.currentBackStackEntryAsState()
+        val userData = userViewModel.userData.observeAsState().value
+        val userType = userData?.type
+
+        val destinos = if (userType == "user") {
+            listOf(Destino.Ecra01, Destino.Ecra03) // só mostra o ecra1 e 2 se for user, caso contrário mostra todos * corrigir carregamento quando são 3 *
+        } else {
+            Destino.toList
+        }
 
         Scaffold(
             bottomBar = {
-                if (currentRoute?.destination?.route in Destino.toList.map { it.route }) {
-                    BottomNavigationBar(navController)
+                val currentRoute =
+                    navController.currentBackStackEntryAsState()?.value?.destination?.route
+                // Só mostra a bottom bar se já tiver o userData carregado e a rota atual existir na lista
+                if (userData != null && currentRoute != null && destinos.any { it.route == currentRoute }) {
+                    BottomNavigationBar(navController, destinos)
                 }
             }
         ) { innerPadding ->
@@ -117,6 +128,34 @@ class MainActivity : ComponentActivity() {
             )
         }
     }
+
+    @Composable
+    fun BottomNavigationBar(navController: NavController, destinos: List<Destino>) {
+        BottomNavigation {
+            val currentRoute =
+                navController.currentBackStackEntryAsState()?.value?.destination?.route
+            destinos.forEach { destino ->
+                BottomNavigationItem(
+                    icon = {
+                        Icon(
+                            painterResource(id = destino.icon),
+                            contentDescription = destino.title
+                        )
+                    },
+                    label = { Text(destino.title) },
+                    selected = currentRoute == destino.route,
+                    onClick = {
+                        navController.navigate(destino.route) {
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                )
+            }
+        }
+    }
+
 
     @Composable
     fun AppNavigation(
@@ -153,34 +192,6 @@ class MainActivity : ComponentActivity() {
                         userViewModel.logout()
                         navController.navigate("login") {
                             popUpTo("login") { inclusive = true }
-                        }
-                    }
-                )
-            }
-        }
-    }
-
-    @Composable
-    fun BottomNavigationBar(navController: NavController) {
-        BottomNavigation {
-            val currentRoute =
-                navController.currentBackStackEntryAsState()?.value?.destination?.route
-
-            Destino.toList.forEach { destino ->
-                BottomNavigationItem(
-                    icon = {
-                        Icon(
-                            painterResource(id = destino.icon),
-                            contentDescription = destino.title
-                        )
-                    },
-                    label = { Text(destino.title) },
-                    selected = currentRoute == destino.route,
-                    onClick = {
-                        navController.navigate(destino.route) {
-                            popUpTo(navController.graph.startDestinationId) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
                         }
                     }
                 )

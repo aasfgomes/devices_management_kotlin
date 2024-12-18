@@ -76,8 +76,8 @@ class UserViewModel : ViewModel() {
                     _userData.postValue(UserData(fetchedUsername, fetchedEmail)) // Atualiza o LiveData
                     auth.signInWithEmailAndPassword(document.getString("email") ?: "", password).await()
 
-                    println("DEBUG: Dados carregados -> Username: $fetchedUsername, Email: $fetchedEmail")
-                    onSuccess() // Navega para a tela principal
+                    println(" pok -> Username: $fetchedUsername, Email: $fetchedEmail")
+                    onSuccess() // Navega para o ecra principal
                 } else {
                     _result.value = "Authentication failed."
                     _isAuthenticated.value = false
