@@ -10,7 +10,6 @@ import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.res.painterResource
 import androidx.lifecycle.Observer
@@ -20,14 +19,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.computacaomovel.devicemanagement.home.*
 import com.computacaomovel.devicemanagement.ui.theme.DeviceManagementTheme
-import com.computacaomovel.devicemanagement.user.LoginScreen
-import com.computacaomovel.devicemanagement.user.UserRegisterScreen
-import com.computacaomovel.devicemanagement.user.UserViewModel
+import com.computacaomovel.devicemanagement.screen.LoginScreen
+import com.computacaomovel.devicemanagement.screen.UserRegisterScreen
+import com.computacaomovel.devicemanagement.viewmodel.UserViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.computacaomovel.devicemanagement.screen.Ecra01
+import com.computacaomovel.devicemanagement.screen.Ecra02
+import com.computacaomovel.devicemanagement.screen.Ecra03
 
 class MainActivity : ComponentActivity() {
 
@@ -199,3 +200,4 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
