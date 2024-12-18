@@ -180,7 +180,7 @@ class UserViewModel : ViewModel() {
     )
 
 
-    // Estado exposto para os dados do utilizador
+    // Estado exposto para os dados do users
     private val _userData = MutableLiveData<UserData>()
     val userData: LiveData<UserData> = _userData
 
@@ -204,16 +204,13 @@ class UserViewModel : ViewModel() {
                     // Atualiza o StateFlow com os dados do user
                     _userData.value = UserData(username, email, type)
                 } catch (e: Exception) {
-                    _result.value = "Erro ao buscar dados: ${e.message}"
+                    _result.value = "Erro ao procurar dados: ${e.message}"
                 }
             }
         } else {
             _result.value = "Utilizador não autenticado."
         }
     }
-
-
-
 
 
     fun logout() {
