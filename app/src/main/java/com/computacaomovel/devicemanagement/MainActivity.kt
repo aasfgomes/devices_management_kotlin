@@ -19,6 +19,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.computacaomovel.devicemanagement.device.DeviceViewModel
 import com.computacaomovel.devicemanagement.ui.theme.DeviceManagementTheme
 import com.computacaomovel.devicemanagement.screen.LoginScreen
 import com.computacaomovel.devicemanagement.screen.UserRegisterScreen
@@ -33,6 +34,8 @@ import com.computacaomovel.devicemanagement.screen.Ecra03
 class MainActivity : ComponentActivity() {
 
     private val userViewModel: UserViewModel by viewModels()
+    private val deviceViewModel: DeviceViewModel by viewModels()
+
     private lateinit var googleSignInClient: GoogleSignInClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -106,7 +109,10 @@ class MainActivity : ComponentActivity() {
         val userType = userData?.type
 
         val destinos = if (userType == "user") {
-            listOf(Destino.Ecra01, Destino.Ecra03) // só mostra o ecra1 e 2 se for user, caso contrário mostra todos * corrigir carregamento quando são 3 *
+            listOf(
+                Destino.Ecra01,
+                Destino.Ecra03
+            ) // só mostra o ecra1 e 2 se for user, caso contrário mostra todos * corrigir carregamento quando são 3 *
         } else {
             Destino.toList
         }
@@ -124,6 +130,7 @@ class MainActivity : ComponentActivity() {
             AppNavigation(
                 navController = navController,
                 userViewModel = userViewModel,
+                deviceViewModel = deviceViewModel,
                 onGoogleSignIn = onGoogleSignIn,
                 padding = innerPadding
             )
@@ -162,6 +169,7 @@ class MainActivity : ComponentActivity() {
     fun AppNavigation(
         navController: NavHostController,
         userViewModel: UserViewModel,
+        deviceViewModel: DeviceViewModel,
         onGoogleSignIn: () -> Unit,
         padding: PaddingValues
     ) {
@@ -184,19 +192,18 @@ class MainActivity : ComponentActivity() {
                     onBackToLogin = { navController.popBackStack("login", inclusive = false) }
                 )
             }
-            composable(Destino.Ecra01.route) { Ecra01() }
+            composable(Destino.Ecra01.route) { Ecra01(deviceViewModel = deviceViewModel) }
             composable(Destino.Ecra02.route) { Ecra02() }
             composable(Destino.Ecra03.route) {
                 Ecra03(
                     userViewModel = userViewModel,
                     onLogout = {
                         userViewModel.logout()
-                        navController.navigate("login") {
-                            popUpTo("login") { inclusive = true }
-                        }
+                        navController.navigate("login") { popUpTo("login") { inclusive = true } }
                     }
                 )
             }
+
         }
     }
 }

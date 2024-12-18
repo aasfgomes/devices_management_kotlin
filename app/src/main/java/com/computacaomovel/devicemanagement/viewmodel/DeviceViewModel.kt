@@ -84,7 +84,7 @@ class DeviceViewModel : ViewModel() {
                 )
 
                 // Guarda no firestore
-                db.collection("devices").document(nextUid.toString()).set(device).await()
+                db.collection("device").document(nextUid.toString()).set(device).await()
                 _result.add("Dispositivo criado com sucesso! UID: $nextUid")
             } catch (e: Exception) {
                 _result.add("Erro ao criar dispositivo: ${e.message}")
