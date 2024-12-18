@@ -21,7 +21,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.computacaomovel.devicemanagement.R
 import com.computacaomovel.devicemanagement.user.UserViewModel
 
@@ -56,7 +55,7 @@ fun Ecra03(
         userViewModel.getCurrentUserData()
     }
 
-    val userData = userViewModel.userData.value ?: UserViewModel.UserData("N/A", "N/A")
+    val userData = userViewModel.userData.value ?: UserViewModel.UserData("", "")
 
     Column(
         modifier = Modifier

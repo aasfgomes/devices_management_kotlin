@@ -43,7 +43,7 @@ class MainActivity : ComponentActivity() {
             .build()
 
         googleSignInClient = GoogleSignIn.getClient(this, gso).apply {
-            signOut() // Força a remoção da sessão anterior para pedir sempre a conta
+            signOut() // Força a sair para pedir sempre a conta google
         }
 
 
@@ -51,7 +51,7 @@ class MainActivity : ComponentActivity() {
             DeviceManagementTheme {
                 val navController = rememberNavController()
 
-                // Observa o estado de autenticação do utilizador
+                // Observa o estado de autenticação do user
                 userViewModel.isAuthenticated.observe(this, Observer { isAuthenticated ->
                     if (isAuthenticated) {
                         navController.navigate(Destino.Ecra01.route) {

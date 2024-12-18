@@ -56,7 +56,7 @@ class UserViewModel : ViewModel() {
     fun authenticate(username: String, password: String, onSuccess: () -> Unit) {
         viewModelScope.launch {
             try {
-                val hashedPassword = hashPassword(password) // Hasheia a password
+                val hashedPassword = hashPassword(password) // hash a password
                 val documents = db.collection("user")
                     .whereEqualTo("username", username)
                     .whereEqualTo("password", hashedPassword)
@@ -95,6 +95,7 @@ class UserViewModel : ViewModel() {
      * @param idToken Token de autenticação Google.
      * @param onSuccess Callback a ser chamado em caso de sucesso.
      */
+
     fun authenticateWithGoogle(idToken: String, onSuccess: () -> Unit) {
         viewModelScope.launch {
             try {
@@ -107,7 +108,7 @@ class UserViewModel : ViewModel() {
                         "uid" to user.uid,
                         "username" to (user.displayName ?: "N/A"),
                         "email" to (user.email ?: "N/A"),
-                        "type" to "user" // Adiciona o campo type com valor "user"
+                        "type" to "user" // Adiciona o campo type com valor "user" default
                     )
 
                     // Grava os dados no Firestore
@@ -134,14 +135,14 @@ class UserViewModel : ViewModel() {
      * @param onSuccess Callback a ser chamado em caso de sucesso.
      */
     fun registerNewUser(username: String, password: String, email: String, onSuccess: () -> Unit) {
-        val hashedPassword = hashPassword(password) // Hasheia a password
+        val hashedPassword = hashPassword(password) // hash password
         auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 val user = hashMapOf(
                     "username" to username,
                     "email" to email,
                     "password" to hashedPassword,
-                    "type" to "user" // Adiciona o campo type com valor "user"
+                    "type" to "user" // Adiciona o campo type com valor "user" por default
                 )
                 db.collection("user").document(auth.currentUser?.uid ?: "").set(user)
                     .addOnSuccessListener {
@@ -171,11 +172,11 @@ class UserViewModel : ViewModel() {
      * Obtém os dados do utilizador autenticado a partir do Firestore.
      */
 
-    // Classe para armazenar os dados do utilizador
+    // Classe para armazenar os dados do user
     data class UserData(
         val username: String,
         val email: String,
-        val type: String = "user" // Campo type adicionado com valor padrão
+        val type: String = "user" // Campo type adicionado com default * isto está hardcoded, de outra maneira rebentava logo *
     )
 
 
@@ -198,9 +199,9 @@ class UserViewModel : ViewModel() {
                     val snapshot = db.collection("user").document(userId).get().await()
                     val username = snapshot.getString("username") ?: "N/A"
                     val email = snapshot.getString("email") ?: "N/A"
-                    val type = snapshot.getString("type") ?: "user" // Busca o campo type
+                    val type = snapshot.getString("type") ?: "user" // procura o campo type
 
-                    // Atualiza o StateFlow com os dados do utilizador
+                    // Atualiza o StateFlow com os dados do user
                     _userData.value = UserData(username, email, type)
                 } catch (e: Exception) {
                     _result.value = "Erro ao buscar dados: ${e.message}"
@@ -217,7 +218,7 @@ class UserViewModel : ViewModel() {
 
     fun logout() {
         auth.signOut() // Desloga o utilizador no Firebase
-        _userData.postValue(UserData("N/A", "N/A")) // Limpa os dados do utilizador
+        _userData.postValue(UserData("N/A", "N/A")) // Limpa os dados do user
         _isAuthenticated.value = false // Reseta o estado de autenticação
         _result.value = "" // Limpa mensagens de resultado
     }
