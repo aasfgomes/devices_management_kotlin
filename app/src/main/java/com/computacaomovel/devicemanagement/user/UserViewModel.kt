@@ -10,6 +10,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
@@ -55,26 +56,39 @@ class UserViewModel : ViewModel() {
     fun authenticate(username: String, password: String, onSuccess: () -> Unit) {
         viewModelScope.launch {
             try {
-                val hashedPassword = hashPassword(password) // Hash para a pw
+                val hashedPassword = hashPassword(password) // Hasheia a password
                 val documents = db.collection("user")
                     .whereEqualTo("username", username)
                     .whereEqualTo("password", hashedPassword)
                     .get()
                     .await()
+
                 if (documents.size() > 0) {
-                    _result.value = "Authentication successful!" // Sucesso
+                    _result.value = "Authentication successful!" // Mensagem de sucesso
                     _isAuthenticated.value = true
-                    onSuccess() // Executa a ação de sucesso
+
+                    // Atualiza os dados do utilizador
+                    val document = documents.documents.first()
+                    val userId = document.id
+                    val fetchedUsername = document.getString("username") ?: "N/A"
+                    val fetchedEmail = document.getString("email") ?: "N/A"
+
+                    _userData.postValue(UserData(fetchedUsername, fetchedEmail)) // Atualiza o LiveData
+                    auth.signInWithEmailAndPassword(document.getString("email") ?: "", password).await()
+
+                    println("DEBUG: Dados carregados -> Username: $fetchedUsername, Email: $fetchedEmail")
+                    onSuccess() // Navega para a tela principal
                 } else {
-                    _result.value = "Authentication failed." // Falha
+                    _result.value = "Authentication failed."
                     _isAuthenticated.value = false
                 }
             } catch (e: Exception) {
-                _result.value = "Error: ${e.message}" // Erro
+                _result.value = "Error: ${e.message}"
                 _isAuthenticated.value = false
             }
         }
     }
+
 
     /**
      * Autentica o user com uma conta Google.
@@ -85,17 +99,32 @@ class UserViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val credential = GoogleAuthProvider.getCredential(idToken, null)
-                auth.signInWithCredential(credential).await() // Autentica com Firebase Auth
+                auth.signInWithCredential(credential).await()
 
-                _result.value = "Authentication with Google successful!" // Sucesso
-                _isAuthenticated.value = true
-                onSuccess() // Executa a ação de sucesso
+                val currentUser = auth.currentUser
+                currentUser?.let { user ->
+                    val userData = hashMapOf(
+                        "uid" to user.uid,
+                        "username" to (user.displayName ?: "N/A"),
+                        "email" to (user.email ?: "N/A"),
+                        "type" to "user" // Adiciona o campo type com valor "user"
+                    )
+
+                    // Grava os dados no Firestore
+                    db.collection("user").document(user.uid).set(userData, SetOptions.merge()).await()
+
+                    _result.value = "Authentication with Google successful!"
+                    _isAuthenticated.value = true
+                    _userData.postValue(UserData(user.displayName ?: "N/A", user.email ?: "N/A"))
+                    onSuccess()
+                }
             } catch (e: Exception) {
-                _result.value = "Google Authentication failed: ${e.message}" // Falha
+                _result.value = "Google Authentication failed: ${e.message}"
                 _isAuthenticated.value = false
             }
         }
     }
+
 
     /**
      * Regista um novo utilizador na aplicação.
@@ -105,30 +134,32 @@ class UserViewModel : ViewModel() {
      * @param onSuccess Callback a ser chamado em caso de sucesso.
      */
     fun registerNewUser(username: String, password: String, email: String, onSuccess: () -> Unit) {
-        val hashedPassword = hashPassword(password) // Hash a pw
+        val hashedPassword = hashPassword(password) // Hasheia a password
         auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 val user = hashMapOf(
                     "username" to username,
                     "email" to email,
-                    "password" to hashedPassword
+                    "password" to hashedPassword,
+                    "type" to "user" // Adiciona o campo type com valor "user"
                 )
                 db.collection("user").document(auth.currentUser?.uid ?: "").set(user)
                     .addOnSuccessListener {
                         _result.value = "Registration successful!" // Sucesso
                         _isRegistered.value = true
-                        onSuccess() // Executa a ação de sucesso
+                        onSuccess()
                     }
                     .addOnFailureListener {
-                        _result.value = "Registration failed: ${it.message}" // Falha no firebase
+                        _result.value = "Registration failed: ${it.message}"
                         _isRegistered.value = false
                     }
             } else {
-                _result.value = "Registration failed: ${task.exception?.message}" // Falha no Auth
+                _result.value = "Registration failed: ${task.exception?.message}"
                 _isRegistered.value = false
             }
         }
     }
+
 
     /**
      * Hash para password SHA-256.
@@ -136,9 +167,59 @@ class UserViewModel : ViewModel() {
      * @return Palavra-passe já encriptada.
      */
 
+    /**
+     * Obtém os dados do utilizador autenticado a partir do Firestore.
+     */
+
+    // Classe para armazenar os dados do utilizador
+    data class UserData(
+        val username: String,
+        val email: String,
+        val type: String = "user" // Campo type adicionado com valor padrão
+    )
+
+
+    // Estado exposto para os dados do utilizador
+    private val _userData = MutableLiveData<UserData>()
+    val userData: LiveData<UserData> = _userData
+
     private fun hashPassword(password: String): String {
         val md = MessageDigest.getInstance("SHA-256") // Instância do SHA-256
         val hash = md.digest(password.toByteArray()) // Hash os bytes da palavra-passe
         return hash.joinToString("") { "%02x".format(it) } // Retorna em formato hexadecimal
     }
+
+    fun getCurrentUserData() {
+        val currentUser = auth.currentUser
+        if (currentUser != null) {
+            val userId = currentUser.uid
+            viewModelScope.launch {
+                try {
+                    val snapshot = db.collection("user").document(userId).get().await()
+                    val username = snapshot.getString("username") ?: "N/A"
+                    val email = snapshot.getString("email") ?: "N/A"
+                    val type = snapshot.getString("type") ?: "user" // Busca o campo type
+
+                    // Atualiza o StateFlow com os dados do utilizador
+                    _userData.value = UserData(username, email, type)
+                } catch (e: Exception) {
+                    _result.value = "Erro ao buscar dados: ${e.message}"
+                }
+            }
+        } else {
+            _result.value = "Utilizador não autenticado."
+        }
+    }
+
+
+
+
+
+    fun logout() {
+        auth.signOut() // Desloga o utilizador no Firebase
+        _userData.postValue(UserData("N/A", "N/A")) // Limpa os dados do utilizador
+        _isAuthenticated.value = false // Reseta o estado de autenticação
+        _result.value = "" // Limpa mensagens de resultado
+    }
+
 }
