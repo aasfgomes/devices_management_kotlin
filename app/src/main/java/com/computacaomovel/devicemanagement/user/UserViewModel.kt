@@ -128,17 +128,21 @@ class UserViewModel : ViewModel() {
 
 
     /**
-     * Regista um novo utilizador na aplicação.
+     * Regista um novo user na aplicação.
      * @param username Nome de utilizador.
      * @param password Palavra-passe.
      * @param email Endereço de email do utilizador.
      * @param onSuccess Callback a ser chamado em caso de sucesso.
      */
     fun registerNewUser(username: String, password: String, email: String, onSuccess: () -> Unit) {
+
         val hashedPassword = hashPassword(password) // hash password
+        val uid = java.util.UUID.randomUUID().toString() // Gera um UID aleatório
+
         auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 val user = hashMapOf(
+                    "uid" to uid, // UID aleatório gerado
                     "username" to username,
                     "email" to email,
                     "password" to hashedPassword,
@@ -192,6 +196,7 @@ class UserViewModel : ViewModel() {
 
     fun getCurrentUserData() {
         val currentUser = auth.currentUser
+
         if (currentUser != null) {
             val userId = currentUser.uid
             viewModelScope.launch {
