@@ -57,7 +57,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
 
                 // Observa o estado de autenticação do user
-                userViewModel.isAuthenticated.observe(this, Observer { isAuthenticated ->
+                userViewModel.isAuthenticated.observe(this, { isAuthenticated ->
                     if (isAuthenticated) {
                         navController.navigate(Destino.Ecra01.route) {
                             popUpTo("login") { inclusive = true }
@@ -120,7 +120,7 @@ class MainActivity : ComponentActivity() {
         Scaffold(
             bottomBar = {
                 val currentRoute =
-                    navController.currentBackStackEntryAsState()?.value?.destination?.route
+                    navController.currentBackStackEntryAsState().value?.destination?.route
                 // Só mostra a bottom bar se já tiver o userData carregado e a rota atual existir na lista
                 if (userData != null && currentRoute != null && destinos.any { it.route == currentRoute }) {
                     BottomNavigationBar(navController, destinos)
@@ -141,7 +141,7 @@ class MainActivity : ComponentActivity() {
     fun BottomNavigationBar(navController: NavController, destinos: List<Destino>) {
         BottomNavigation {
             val currentRoute =
-                navController.currentBackStackEntryAsState()?.value?.destination?.route
+                navController.currentBackStackEntryAsState().value?.destination?.route
             destinos.forEach { destino ->
                 BottomNavigationItem(
                     icon = {
@@ -192,7 +192,15 @@ class MainActivity : ComponentActivity() {
                     onBackToLogin = { navController.popBackStack("login", inclusive = false) }
                 )
             }
-            composable(Destino.Ecra01.route) { Ecra01(deviceViewModel = deviceViewModel) }
+            composable(Destino.Ecra01.route) {
+                Ecra01(
+                    deviceViewModel = deviceViewModel,
+                    onAddDeviceClick = {
+                        println("Botão de adicionar dispositivo clicado")
+
+                    }
+                )
+            }
             composable(Destino.Ecra02.route) { Ecra02() }
             composable(Destino.Ecra03.route) {
                 Ecra03(
@@ -203,8 +211,7 @@ class MainActivity : ComponentActivity() {
                     }
                 )
             }
-
         }
     }
-}
 
+}
