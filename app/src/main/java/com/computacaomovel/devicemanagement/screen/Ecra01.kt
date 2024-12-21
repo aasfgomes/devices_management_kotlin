@@ -79,13 +79,13 @@ fun Ecra01(deviceViewModel: DeviceViewModel, onAddDeviceClick: () -> Unit) {
             }
         }
 
-        // Botão flutuante para adicionar dispositivo
+        // Botão de add
         FloatingActionButton(
             onClick = onAddDeviceClick,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(bottom = 70.dp, end = 16.dp), // Ajuste da posição
-            containerColor = Color.White // Fundo branco
+                .padding(bottom = 70.dp, end = 16.dp), // Posicao
+            containerColor = Color.White //
         ) {
             Text(
                 text = "+",

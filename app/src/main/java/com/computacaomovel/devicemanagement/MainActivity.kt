@@ -30,6 +30,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.computacaomovel.devicemanagement.screen.Ecra01
 import com.computacaomovel.devicemanagement.screen.Ecra02
 import com.computacaomovel.devicemanagement.screen.Ecra03
+import com.computacaomovel.devicemanagement.screen.EcraAddDevice
 
 class MainActivity : ComponentActivity() {
 
@@ -195,10 +196,7 @@ class MainActivity : ComponentActivity() {
             composable(Destino.Ecra01.route) {
                 Ecra01(
                     deviceViewModel = deviceViewModel,
-                    onAddDeviceClick = {
-                        println("Botão de adicionar dispositivo clicado")
-
-                    }
+                    onAddDeviceClick = { navController.navigate("addDevice") }
                 )
             }
             composable(Destino.Ecra02.route) { Ecra02() }
@@ -211,7 +209,13 @@ class MainActivity : ComponentActivity() {
                     }
                 )
             }
+            composable("addDevice") {
+                EcraAddDevice(
+                    deviceViewModel = deviceViewModel,
+                    onDeviceAdded = { navController.popBackStack() },
+                    onBack = { navController.popBackStack() }
+                )
+            }
         }
     }
-
 }

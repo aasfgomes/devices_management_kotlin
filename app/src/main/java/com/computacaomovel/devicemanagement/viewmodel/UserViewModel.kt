@@ -136,19 +136,21 @@ class UserViewModel : ViewModel() {
      */
     fun registerNewUser(username: String, password: String, email: String, onSuccess: () -> Unit) {
 
-        val hashedPassword = hashPassword(password) // hash password
-        val uid = java.util.UUID.randomUUID().toString() // Gera um UID aleatório
+        val hashedPassword = hashPassword(password) // Hash da password
 
         auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener { task ->
             if (task.isSuccessful) {
+                val currentUserUid = auth.currentUser?.uid ?: return@addOnCompleteListener // Obtém o UID do utilizador atual
+
                 val user = hashMapOf(
-                    "uid" to uid, // UID aleatório gerado
+                    "uid" to currentUserUid, // Usa o UID gerado pelo Firebase Authentication
                     "username" to username,
                     "email" to email,
                     "password" to hashedPassword,
-                    "type" to "user" // Adiciona o campo type com valor "user" por default
+                    "type" to "user" // Define o tipo como "user" por padrão
                 )
-                db.collection("user").document(auth.currentUser?.uid ?: "").set(user)
+
+                db.collection("user").document(currentUserUid).set(user) // Usa o mesmo UID como ID do documento * importante para os logs e para add device *
                     .addOnSuccessListener {
                         _result.value = "Registration successful!" // Sucesso
                         _isRegistered.value = true
@@ -166,6 +168,7 @@ class UserViewModel : ViewModel() {
     }
 
 
+
     /**
      * Hash para password SHA-256.
      * @param password pw.
@@ -176,7 +179,7 @@ class UserViewModel : ViewModel() {
      * Obtém os dados do utilizador autenticado a partir do Firestore.
      */
 
-    // Classe para armazenar os dados do user
+    // Classe para guardar os dados do user
     data class UserData(
         val username: String,
         val email: String,
