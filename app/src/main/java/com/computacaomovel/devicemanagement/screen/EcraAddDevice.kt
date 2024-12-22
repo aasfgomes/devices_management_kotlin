@@ -2,20 +2,24 @@ package com.computacaomovel.devicemanagement.screen
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.computacaomovel.devicemanagement.R
 import com.computacaomovel.devicemanagement.device.DeviceViewModel
 
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun EcraAddDevice(
     deviceViewModel: DeviceViewModel,
     onDeviceAdded: () -> Unit,
@@ -41,125 +45,140 @@ fun EcraAddDevice(
 
     val resultMessage = deviceViewModel.result.observeAsState().value ?: ""
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Adicionar Novo Dispositivo",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Voltar",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.mediumTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                )
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { padding ->
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.Center)
-                .padding(horizontal = 16.dp),
+                .fillMaxSize()
+                .padding(padding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Título
-            Text(
-                text = "Adicionar Novo Dispositivo",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Exibir mensagem de erro ou sucesso
+            // Mensagem de erro ou sucesso
             if (resultMessage.isNotEmpty()) {
                 Text(
                     text = resultMessage,
-                    color = if (resultMessage.startsWith("Erro")) Color.Red else Color.Green,
-                    fontSize = 14.sp,
-                    modifier = Modifier.padding(vertical = 8.dp)
+                    color = if (resultMessage.startsWith("Erro")) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Dropdown para Tipo
-            StableDropdownMenu(
-                label = "Tipo",
-                options = validTypes,
-                selectedOption = type,
-                onOptionSelected = { type = it }
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Campo para Marca
-            OutlinedTextField(
-                value = brand,
-                onValueChange = {
-                    brand = it
-                    brandError = it.isBlank()
-                },
-                label = { Text("Marca") },
+            // Card de entrada de dados
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 modifier = Modifier.fillMaxWidth(),
-                isError = brandError
-            )
-            if (brandError) {
-                Text(
-                    text = "Marca é obrigatória",
-                    color = Color.Red,
-                    fontSize = 12.sp
-                )
+                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // Dropdown Tipo
+                    OutlinedTextField(
+                        value = type,
+                        onValueChange = { },
+                        label = { Text("Tipo") },
+                        readOnly = true,
+                        trailingIcon = {
+                            DropdownMenu(
+                                options = validTypes,
+                                selectedOption = type,
+                                onOptionSelected = { type = it }
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    // Campos de entrada
+                    OutlinedTextField(
+                        value = brand,
+                        onValueChange = {
+                            brand = it
+                            brandError = it.isBlank()
+                        },
+                        label = { Text("Marca") },
+                        isError = brandError,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    OutlinedTextField(
+                        value = model,
+                        onValueChange = {
+                            model = it
+                            modelError = it.isBlank()
+                        },
+                        label = { Text("Modelo") },
+                        isError = modelError,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    OutlinedTextField(
+                        value = description,
+                        onValueChange = { description = it },
+                        label = { Text("Descrição") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    OutlinedTextField(
+                        value = serialNumber,
+                        onValueChange = { serialNumber = it },
+                        label = { Text("Número de Série") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    OutlinedTextField(
+                        value = assignedTo,
+                        onValueChange = { assignedTo = it },
+                        label = { Text("ColaboradorID") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    // Dropdown Status
+                    OutlinedTextField(
+                        value = status,
+                        onValueChange = { },
+                        label = { Text("Status") },
+                        readOnly = true,
+                        trailingIcon = {
+                            DropdownMenu(
+                                options = validStatuses,
+                                selectedOption = status,
+                                onOptionSelected = { status = it }
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Campo para Modelo
-            OutlinedTextField(
-                value = model,
-                onValueChange = {
-                    model = it
-                    modelError = it.isBlank()
-                },
-                label = { Text("Modelo") },
-                modifier = Modifier.fillMaxWidth(),
-                isError = modelError
-            )
-            if (modelError) {
-                Text(
-                    text = "Modelo é obrigatório",
-                    color = Color.Red,
-                    fontSize = 12.sp
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Campo para Descrição
-            OutlinedTextField(
-                value = description,
-                onValueChange = { description = it },
-                label = { Text("Descrição") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Campo para Número de Série
-            OutlinedTextField(
-                value = serialNumber,
-                onValueChange = { serialNumber = it },
-                label = { Text("Número de Série") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Campo para Colaborador (assignedTo)
-            OutlinedTextField(
-                value = assignedTo,
-                onValueChange = { assignedTo = it },
-                label = { Text("Colaborador") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Dropdown para Status
-            StableDropdownMenu(
-                label = "Status",
-                options = validStatuses,
-                selectedOption = status,
-                onOptionSelected = { status = it }
-            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -188,63 +207,34 @@ fun EcraAddDevice(
             ) {
                 Text(
                     text = "Adicionar Dispositivo",
-                    color = Color.White
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
             }
-            // Redireciona para a página principal após sucesso
+
             LaunchedEffect(resultMessage) {
                 if (resultMessage.startsWith("Dispositivo criado com sucesso")) {
-                    onDeviceAdded() // Navega para a página principal
+                    onDeviceAdded()
                 }
             }
-        }
-
-
-            // Botão flutuante para voltar
-        FloatingActionButton(
-            onClick = onBack,
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(16.dp),
-            containerColor = Color.White,
-            contentColor = MaterialTheme.colorScheme.primary
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.back),
-                contentDescription = "Voltar"
-            )
         }
     }
 }
 
 @Composable
-fun StableDropdownMenu(
-    label: String,
+fun DropdownMenu(
     options: List<String>,
     selectedOption: String,
     onOptionSelected: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    Box(modifier = Modifier.fillMaxWidth()) {
-        OutlinedTextField(
-            value = selectedOption,
-            onValueChange = { }, // Read-only
-            label = { Text(label) },
-            readOnly = true,
-            trailingIcon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.dropdown),
-                    contentDescription = null,
-                    modifier = Modifier.clickable { expanded = !expanded }
-                )
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { expanded = !expanded }
-        )
+    Box {
+        IconButton(onClick = { expanded = !expanded }) {
+            Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+        }
 
-        DropdownMenu(
+        androidx.compose.material3.DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
@@ -260,3 +250,6 @@ fun StableDropdownMenu(
         }
     }
 }
+
+
+

@@ -70,8 +70,8 @@ class UserViewModel : ViewModel() {
                     // Atualiza os dados do utilizador
                     val document = documents.documents.first()
                     val userId = document.id
-                    val fetchedUsername = document.getString("username") ?: "N/A"
-                    val fetchedEmail = document.getString("email") ?: "N/A"
+                    val fetchedUsername = document.getString("username") ?: "-"
+                    val fetchedEmail = document.getString("email") ?: "-"
 
                     _userData.postValue(UserData(fetchedUsername, fetchedEmail)) // Atualiza o LiveData
                     auth.signInWithEmailAndPassword(document.getString("email") ?: "", password).await()
@@ -106,8 +106,8 @@ class UserViewModel : ViewModel() {
                 currentUser?.let { user ->
                     val userData = hashMapOf(
                         "uid" to user.uid,
-                        "username" to (user.displayName ?: "N/A"),
-                        "email" to (user.email ?: "N/A"),
+                        "username" to (user.displayName ?: "-"),
+                        "email" to (user.email ?: "-"),
                         "type" to "user" // Adiciona o campo type com valor "user" default
                     )
 
@@ -116,7 +116,7 @@ class UserViewModel : ViewModel() {
 
                     _result.value = "Authentication with Google successful!"
                     _isAuthenticated.value = true
-                    _userData.postValue(UserData(user.displayName ?: "N/A", user.email ?: "N/A"))
+                    _userData.postValue(UserData(user.displayName ?: "-", user.email ?: "-"))
                     onSuccess()
                 }
             } catch (e: Exception) {
@@ -205,8 +205,8 @@ class UserViewModel : ViewModel() {
             viewModelScope.launch {
                 try {
                     val snapshot = db.collection("user").document(userId).get().await()
-                    val username = snapshot.getString("username") ?: "N/A"
-                    val email = snapshot.getString("email") ?: "N/A"
+                    val username = snapshot.getString("username") ?: "-"
+                    val email = snapshot.getString("email") ?: "-"
                     val type = snapshot.getString("type") ?: "user" // procura o campo type
 
                     // Atualiza o StateFlow com os dados do user
@@ -223,7 +223,7 @@ class UserViewModel : ViewModel() {
 
     fun logout() {
         auth.signOut() // Desloga o utilizador no Firebase
-        _userData.postValue(UserData("N/A", "N/A")) // Limpa os dados do user
+        _userData.postValue(UserData("-", "-")) // Limpa os dados do user
         _isAuthenticated.value = false // Reseta o estado de autenticação
         _result.value = "" // Limpa mensagens de resultado
     }

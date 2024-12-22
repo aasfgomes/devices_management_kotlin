@@ -27,25 +27,13 @@ class DeviceViewModel : ViewModel() {
     private val validTypes = listOf("desktop", "laptop", "smartphone", "tablet")
     private val validStatuses = listOf("available", "check-out", "broken", "sold")
 
-    /**
-     * Função auxiliar para obter o UID do user atual * usamos nos logs *
-     */
+    // Função auxiliar para obter o UID do usuário atual
     private fun getCurrentUserUid(): String? {
         return auth.currentUser?.uid
     }
 
-    /**
-     * Função auxiliar para obter o próximo UID incremental
-     */
-    private suspend fun getNextUid(): Int {
-        val snapshot = db.collection("device").get().await()
-        val currentCount = snapshot.size()
-        return currentCount + 1
-    }
 
-    /**
-     * Função para atualizar o log global no Firestore
-     */
+    // Atualiza os logs globais no Firestore
     private suspend fun updateGlobalLog(
         operation: String,
         deviceUid: String,
@@ -55,20 +43,16 @@ class DeviceViewModel : ViewModel() {
         val logEntry = hashMapOf(
             "operation" to operation,
             "device_uid" to deviceUid,
-            "created_by" to performedBy, // ID de quem cria o device ou faz alguma coisa
+            "created_by" to performedBy,
             "timestamp" to System.currentTimeMillis(),
             "details" to details
         )
         try {
             val logsRef = db.collection("logs").document("global_logs")
-
-            // Verifica se o documento existe; cria caso não exista
             val snapshot = logsRef.get().await()
             if (!snapshot.exists()) {
                 logsRef.set(hashMapOf("operations" to listOf<Map<String, Any>>())).await()
             }
-
-            // Adiciona o novo log
             logsRef.update(
                 "operations",
                 com.google.firebase.firestore.FieldValue.arrayUnion(logEntry)
@@ -78,11 +62,28 @@ class DeviceViewModel : ViewModel() {
         }
     }
 
+    // Cria um novo dispositivo
+    // Atualize o método `getNextUid` para evitar colisões
+    private suspend fun getNextUid(): String {
+        val snapshot = db.collection("device").get().await()
+        // Gera um UID único baseado em um timestamp ou UUID
+        return System.currentTimeMillis().toString() // Alternativa: UUID.randomUUID().toString()
+    }
+    // Método para obter o próximo UID incremental
+    private suspend fun getNextUidDevice(): Int {
+        return try {
+            val snapshot = db.collection("device").get().await()
+            // Busca o maior UID existente e incrementa
+            val maxUid = snapshot.documents
+                .mapNotNull { it.getLong("uid") } // Obtém os UIDs existentes
+                .maxOrNull() ?: 0 // Se não houver UID, começa com 0
+            (maxUid + 1).toInt()
+        } catch (e: Exception) {
+            throw Exception("Erro ao obter próximo UID: ${e.message}")
+        }
+    }
 
-
-    /**
-     * Função para criar um novo dispositivo.
-     */
+    // Função para criar um dispositivo com UID incremental
     fun createDevice(
         type: String,
         brand: String,
@@ -96,35 +97,35 @@ class DeviceViewModel : ViewModel() {
             try {
                 val currentUserUid = getCurrentUserUid()
                 if (currentUserUid == null) {
-                    _result.postValue("Erro: User não autenticado.")
+                    _result.postValue("Erro: Usuário não autenticado.")
                     return@launch
                 }
 
                 if (type !in validTypes) {
-                    _result.postValue("Erro: O tipo de dispositivo '$type' não é válido.")
+                    _result.postValue("Erro: Tipo de dispositivo '$type' inválido.")
                     return@launch
                 }
 
                 if (status !in validStatuses) {
-                    _result.postValue("Erro: O status '$status' não é válido.")
+                    _result.postValue("Erro: Status '$status' inválido.")
                     return@launch
                 }
 
                 if (brand.isBlank() || model.isBlank()) {
-                    _result.postValue("Erro: 'Marca' e 'Modelo' são obrigatórios.")
+                    _result.postValue("Erro: Marca e Modelo são obrigatórios.")
                     return@launch
                 }
 
                 if (!assignedTo.isNullOrBlank()) {
                     val userSnapshot = db.collection("user").document(assignedTo).get().await()
                     if (!userSnapshot.exists()) {
-                        _result.postValue("Erro: O colaborador com UID '$assignedTo' não existe.")
+                        _result.postValue("Erro: Colaborador com UID '$assignedTo' não existe.")
                         return@launch
                     }
                 }
 
-                val nextUid = getNextUid()
-
+                // Obtém o próximo UID incremental
+                val nextUid = getNextUidDevice()
                 val device = hashMapOf(
                     "uid" to nextUid,
                     "type" to type,
@@ -146,20 +147,21 @@ class DeviceViewModel : ViewModel() {
                 )
 
                 _result.postValue("Dispositivo criado com sucesso! UID: $nextUid")
+                getDevice() // Atualiza a lista de dispositivos após criar
             } catch (e: Exception) {
                 _result.postValue("Erro ao criar dispositivo: ${e.message}")
             }
         }
     }
 
+
+
+    // Busca a lista de dispositivos
     fun getDevice() {
         viewModelScope.launch {
             try {
-                // Consulta todos os documentos na coleção "device"
                 val snapshot = db.collection("device").get().await()
-
                 if (!snapshot.isEmpty) {
-                    // Transforma os resultados para uma lista de mapas e ordena pelo UID
                     val devices = snapshot.documents
                         .map { it.data ?: emptyMap() }
                         .sortedBy { it["uid"] as? Int }
@@ -175,7 +177,108 @@ class DeviceViewModel : ViewModel() {
         }
     }
 
+    // Limpa a mensagem de resultado
     fun clearResultMessage() {
         _result.value = ""
     }
+
+    // Busca o nome de um colaborador pelo UID
+    fun getCollaboratorName(uid: String, callback: (String?) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val userSnapshot = db.collection("user").document(uid).get().await()
+                if (userSnapshot.exists()) {
+                    val name = userSnapshot.getString("username")
+                    callback(name)
+                } else {
+                    callback(null)
+                }
+            } catch (e: Exception) {
+                callback(null)
+            }
+        }
+    }
+
+    // Remove um dispositivo pelo UID
+    fun deleteDevice(deviceId: String?, onComplete: (Boolean) -> Unit) {
+        if (deviceId.isNullOrEmpty()) {
+            onComplete(false)
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                db.collection("device").document(deviceId).delete().await()
+                _deviceList.value = _deviceList.value?.filterNot { it["uid"].toString() == deviceId }
+                _result.postValue("Dispositivo removido com sucesso!")
+                onComplete(true)
+            } catch (e: Exception) {
+                _result.postValue("Erro ao remover dispositivo: ${e.message}")
+                onComplete(false)
+            }
+        }
+    }
+
+    fun updateDevice(
+        uid: String,
+        description: String?,
+        serialNumber: String?,
+        assignedTo: String?,
+        status: String
+    ) {
+        viewModelScope.launch {
+            try {
+                val currentUserUid = getCurrentUserUid()
+                if (currentUserUid == null) {
+                    _result.postValue("Erro: Usuário não autenticado.")
+                    return@launch
+                }
+
+                // Validação dos campos que podem ser atualizados
+                if (status !in validStatuses) {
+                    _result.postValue("Erro: Status '$status' inválido.")
+                    return@launch
+                }
+
+                if (!assignedTo.isNullOrBlank()) {
+                    val userSnapshot = db.collection("user").document(assignedTo).get().await()
+                    if (!userSnapshot.exists()) {
+                        _result.postValue("Erro: Colaborador com UID '$assignedTo' não existe.")
+                        return@launch
+                    }
+                }
+
+                // Dados permitidos para atualização (remove valores nulos)
+                val updatedFields = mutableMapOf<String, Any>(
+                    "description" to (description ?: ""),
+                    "serial_number" to (serialNumber ?: ""),
+                    "assigned_to" to (assignedTo ?: ""),
+                    "status" to status
+                ).filter { (_, value) -> value.toString().isNotBlank() } // Apenas valores válidos
+
+                if (updatedFields.isEmpty()) {
+                    _result.postValue("Erro: Nenhuma alteração detectada.")
+                    return@launch
+                }
+
+                // Atualização no Firestore
+                db.collection("device").document(uid).update(updatedFields).await()
+
+                // Atualizar logs globais
+                updateGlobalLog(
+                    operation = "update",
+                    deviceUid = uid,
+                    performedBy = currentUserUid,
+                    details = updatedFields
+                )
+
+                _result.postValue("Dispositivo atualizado com sucesso!")
+                getDevice() // Atualiza a lista de dispositivos
+            } catch (e: Exception) {
+                _result.postValue("Erro ao atualizar dispositivo: ${e.message}")
+            }
+        }
+    }
+
+
 }

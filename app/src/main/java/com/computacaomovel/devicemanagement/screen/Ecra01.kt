@@ -1,4 +1,3 @@
-
 package com.computacaomovel.devicemanagement.screen
 
 import androidx.compose.foundation.background
@@ -20,13 +19,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.computacaomovel.devicemanagement.device.DeviceViewModel
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun Ecra01(deviceViewModel: DeviceViewModel, onAddDeviceClick: () -> Unit) {
-    val coroutineScope = rememberCoroutineScope()
-
+fun Ecra01(
+    deviceViewModel: DeviceViewModel,
+    navController: NavController,
+    onAddDeviceClick: () -> Unit
+) {
     // Observa os estados do ViewModel
     val allDevices = deviceViewModel.deviceList.value ?: emptyList()
     var filteredDevices by remember { mutableStateOf(allDevices) }
@@ -47,8 +49,7 @@ fun Ecra01(deviceViewModel: DeviceViewModel, onAddDeviceClick: () -> Unit) {
                 (it["uid"]?.toString()?.contains(searchQuery, ignoreCase = true) == true) ||
                         (it["type"]?.toString()?.contains(searchQuery, ignoreCase = true) == true) ||
                         (it["model"]?.toString()?.contains(searchQuery, ignoreCase = true) == true) ||
-                        (it["status"]?.toString()?.contains(searchQuery, ignoreCase = true) == true) 
-                        //(it[""]?.toString()?.contains(searchQuery, ignoreCase = true) == true) ||
+                        (it["status"]?.toString()?.contains(searchQuery, ignoreCase = true) == true)
             }
         }
     }
@@ -57,7 +58,7 @@ fun Ecra01(deviceViewModel: DeviceViewModel, onAddDeviceClick: () -> Unit) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 32.dp), // Margens ajustadas
+                .padding(horizontal = 16.dp, vertical = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(16.dp))
@@ -75,16 +76,16 @@ fun Ecra01(deviceViewModel: DeviceViewModel, onAddDeviceClick: () -> Unit) {
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp)) // Cantos arredondados
+                    .clip(RoundedCornerShape(12.dp))
                     .padding(vertical = 8.dp),
-                shape = RoundedCornerShape(12.dp), // Estilização arredondada
+                shape = RoundedCornerShape(12.dp),
                 colors = TextFieldDefaults.outlinedTextFieldColors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = Color.Gray
                 )
             )
 
-            Spacer(modifier = Modifier.height(24.dp)) // Maior espaço entre elementos
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Mensagem de resultado
             if (resultMessage.isNotEmpty()) {
@@ -103,7 +104,7 @@ fun Ecra01(deviceViewModel: DeviceViewModel, onAddDeviceClick: () -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
-                    .clip(RoundedCornerShape(8.dp)) // Estilização do cabeçalho
+                    .clip(RoundedCornerShape(8.dp))
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -122,7 +123,10 @@ fun Ecra01(deviceViewModel: DeviceViewModel, onAddDeviceClick: () -> Unit) {
             ) {
                 items(filteredDevices) { device ->
                     if (device is Map<*, *> && device.keys.all { it is String }) {
-                        DeviceTableRow(device = device as Map<String, Any>, onDeviceClick = {})
+                        DeviceTableRow(
+                            device = device as Map<String, Any>,
+                            navController = navController
+                        )
                     }
                 }
             }
@@ -137,7 +141,7 @@ fun Ecra01(deviceViewModel: DeviceViewModel, onAddDeviceClick: () -> Unit) {
             containerColor = MaterialTheme.colorScheme.primary
         ) {
             Icon(
-                imageVector = Icons.Default.Add, // Ícone atualizado para "Add"
+                imageVector = Icons.Default.Add,
                 contentDescription = "Adicionar dispositivo",
                 tint = Color.White
             )
@@ -158,20 +162,23 @@ fun TableHeaderCell(text: String, modifier: Modifier) {
 }
 
 @Composable
-fun DeviceTableRow(device: Map<String, Any>, onDeviceClick: (Map<String, Any>) -> Unit) {
+fun DeviceTableRow(device: Map<String, Any>, navController: NavController) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
-            .clickable { onDeviceClick(device) }
+            .clickable {
+                val deviceId = device["uid"].toString()
+                navController.navigate("deviceInformation/$deviceId")
+            }
             .clip(RoundedCornerShape(8.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        TableCell(device["uid"]?.toString() ?: "N/A", Modifier.weight(1f))
-        TableCell(device["type"]?.toString() ?: "N/A", Modifier.weight(1f))
-        TableCell(device["model"]?.toString() ?: "N/A", Modifier.weight(1f))
-        TableCell(device["status"]?.toString() ?: "N/A", Modifier.weight(1f))
+        TableCell(device["uid"]?.toString() ?: "-", Modifier.weight(1f))
+        TableCell(device["type"]?.toString() ?: "-", Modifier.weight(1f))
+        TableCell(device["model"]?.toString() ?: "-", Modifier.weight(1f))
+        TableCell(device["status"]?.toString() ?: "-", Modifier.weight(1f))
     }
 }
 

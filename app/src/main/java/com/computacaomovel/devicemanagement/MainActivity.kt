@@ -10,9 +10,10 @@ import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.res.painterResource
-import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -31,6 +32,7 @@ import com.computacaomovel.devicemanagement.screen.Ecra01
 import com.computacaomovel.devicemanagement.screen.Ecra02
 import com.computacaomovel.devicemanagement.screen.Ecra03
 import com.computacaomovel.devicemanagement.screen.EcraAddDevice
+import com.computacaomovel.devicemanagement.screen.EcraInformation
 
 class MainActivity : ComponentActivity() {
 
@@ -52,19 +54,20 @@ class MainActivity : ComponentActivity() {
             signOut() // Força a sair para pedir sempre a conta google
         }
 
-
         setContent {
             DeviceManagementTheme {
                 val navController = rememberNavController()
 
-                // Observa o estado de autenticação do user
-                userViewModel.isAuthenticated.observe(this, { isAuthenticated ->
+                // Observa o estado de autenticação do utilizador
+                userViewModel.isAuthenticated.observe(this) { isAuthenticated ->
                     if (isAuthenticated) {
                         navController.navigate(Destino.Ecra01.route) {
-                            popUpTo("login") { inclusive = true }
+                            popUpTo("login") {
+                                inclusive = true
+                            } // Limpa o histórico ao navegar para o Home
                         }
                     }
-                })
+                }
 
                 MainApp(
                     navController = navController,
@@ -99,7 +102,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-
     @Composable
     fun MainApp(
         navController: NavHostController,
@@ -108,22 +110,40 @@ class MainActivity : ComponentActivity() {
     ) {
         val userData = userViewModel.userData.observeAsState().value
         val userType = userData?.type
+        val isAuthenticated = userViewModel.isAuthenticated.observeAsState(initial = false).value
 
-        val destinos = if (userType == "user") {
-            listOf(
-                Destino.Ecra01,
-                Destino.Ecra03
-            ) // só mostra o ecra1 e 2 se for user, caso contrário mostra todos * corrigir carregamento quando são 3 *
-        } else {
-            Destino.toList
+        // Define os destinos dinamicamente com base no tipo de utilizador
+        val destinos = remember(userType) {
+            if (userType == "user") {
+                listOf(
+                    Destino.Ecra01, // Home
+                    Destino.Ecra03  // Perfil
+                )
+            } else {
+                Destino.toList // Para admin ou outros tipos de utilizadores
+            }
+        }
+
+        // Lógica para navegação inicial baseada no estado de autenticação
+        LaunchedEffect(isAuthenticated) {
+            if (isAuthenticated) {
+                navController.navigate(Destino.Ecra01.route) {
+                    popUpTo("login") { inclusive = true } // Redireciona para Home se autenticado
+                }
+            } else {
+                navController.navigate("login") {
+                    popUpTo(0) // Limpa toda a pilha de navegação ao redirecionar para login
+                }
+            }
         }
 
         Scaffold(
             bottomBar = {
                 val currentRoute =
                     navController.currentBackStackEntryAsState().value?.destination?.route
-                // Só mostra a bottom bar se já tiver o userData carregado e a rota atual existir na lista
-                if (userData != null && currentRoute != null && destinos.any { it.route == currentRoute }) {
+
+                // Mostra a barra de navegação apenas se autenticado e a rota atual for válida
+                if (isAuthenticated && destinos.any { it.route == currentRoute }) {
                     BottomNavigationBar(navController, destinos)
                 }
             }
@@ -143,6 +163,7 @@ class MainActivity : ComponentActivity() {
         BottomNavigation {
             val currentRoute =
                 navController.currentBackStackEntryAsState().value?.destination?.route
+
             destinos.forEach { destino ->
                 BottomNavigationItem(
                     icon = {
@@ -156,15 +177,14 @@ class MainActivity : ComponentActivity() {
                     onClick = {
                         navController.navigate(destino.route) {
                             popUpTo(navController.graph.startDestinationId) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
+                            launchSingleTop = true // Garante que só existe uma instância
+                            restoreState = true // Restaura o estado ao navegar novamente
                         }
                     }
                 )
             }
         }
     }
-
 
     @Composable
     fun AppNavigation(
@@ -196,6 +216,7 @@ class MainActivity : ComponentActivity() {
             composable(Destino.Ecra01.route) {
                 Ecra01(
                     deviceViewModel = deviceViewModel,
+                    navController = navController, // Passa o navController aqui
                     onAddDeviceClick = { navController.navigate("addDevice") }
                 )
             }
@@ -212,10 +233,41 @@ class MainActivity : ComponentActivity() {
             composable("addDevice") {
                 EcraAddDevice(
                     deviceViewModel = deviceViewModel,
-                    onDeviceAdded = { navController.popBackStack() },
+                    onDeviceAdded = { navController.popBackStack() }, // Voltar após adicionar
+                    //onDeviceUpdated = { navController.popBackStack() }, // Voltar após atualizar
                     onBack = { navController.popBackStack() }
                 )
             }
+
+            // Navegação para EcraInformation
+            composable("deviceInformation/{deviceId}") { backStackEntry ->
+                val deviceId = backStackEntry.arguments?.getString("deviceId")
+                EcraInformation(
+                    deviceId = deviceId,
+                    deviceViewModel = deviceViewModel,
+                    onBack = { navController.popBackStack() }, // Voltar
+                    onDeleteDevice = {
+                        if (deviceId != null) {
+                            deviceViewModel.deleteDevice(deviceId) { success ->
+                                if (success) navController.popBackStack() // Volta ao ecrã anterior
+                            }
+                        }
+                    }
+                )
+            }
+
+            composable("editDevice/{deviceId}") { backStackEntry ->
+                val deviceId = backStackEntry.arguments?.getString("deviceId")
+                EcraAddDevice(
+                    deviceViewModel = deviceViewModel,
+                    onDeviceAdded = { navController.popBackStack() }, // Voltar após adicionar
+                    //onDeviceUpdated = { navController.popBackStack() }, // Voltar após atualizar
+                    onBack = { navController.popBackStack() },
+                    //isEditing = true, // Modo de edição
+                    //initialDeviceData = deviceViewModel.deviceList.value?.find { it["uid"].toString() == deviceId }
+                )
+            }
+
         }
     }
 }
