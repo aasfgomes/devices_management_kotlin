@@ -23,22 +23,26 @@ import com.computacaomovel.devicemanagement.device.DeviceViewModel
 fun EcraAddDevice(
     deviceViewModel: DeviceViewModel,
     onDeviceAdded: () -> Unit,
-    onBack: () -> Unit
+    onDeviceUpdated: () -> Unit, // Callback para quando um dispositivo é atualizado
+    onBack: () -> Unit,
+    isEditing: Boolean = false, // Indica se estamos no modo de edição
+    initialDeviceData: Map<String, Any>? = null // Dados iniciais para edição, se houver
 ) {
     LaunchedEffect(Unit) {
         deviceViewModel.clearResultMessage()
     }
 
+    // Dados de entrada (preenchidos com valores iniciais, se em edição)
     val validTypes = listOf("desktop", "laptop", "smartphone", "tablet")
     val validStatuses = listOf("available", "check-out", "broken", "sold")
 
-    var type by remember { mutableStateOf(validTypes.first()) }
-    var brand by remember { mutableStateOf("") }
-    var model by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var serialNumber by remember { mutableStateOf("") }
-    var assignedTo by remember { mutableStateOf("") }
-    var status by remember { mutableStateOf(validStatuses.first()) }
+    var type by remember { mutableStateOf(initialDeviceData?.get("type") as? String ?: validTypes.first()) }
+    var brand by remember { mutableStateOf(initialDeviceData?.get("brand") as? String ?: "") }
+    var model by remember { mutableStateOf(initialDeviceData?.get("model") as? String ?: "") }
+    var description by remember { mutableStateOf(initialDeviceData?.get("description") as? String ?: "") }
+    var serialNumber by remember { mutableStateOf(initialDeviceData?.get("serial_number") as? String ?: "") }
+    var assignedTo by remember { mutableStateOf(initialDeviceData?.get("assigned_to") as? String ?: "") }
+    var status by remember { mutableStateOf(initialDeviceData?.get("status") as? String ?: validStatuses.first()) }
 
     var brandError by remember { mutableStateOf(false) }
     var modelError by remember { mutableStateOf(false) }
@@ -50,7 +54,7 @@ fun EcraAddDevice(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Adicionar Novo Dispositivo",
+                        text = if (isEditing) "Editar Dispositivo" else "Adicionar Novo Dispositivo",
                         style = MaterialTheme.typography.titleMedium
                     )
                 },
@@ -102,7 +106,7 @@ fun EcraAddDevice(
                         .fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // Dropdown Tipo
+                    // Dropdown Tipo (não editável em modo edição)
                     OutlinedTextField(
                         value = type,
                         onValueChange = { },
@@ -115,7 +119,8 @@ fun EcraAddDevice(
                                 onOptionSelected = { type = it }
                             )
                         },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isEditing // Apenas editável em modo de adição
                     )
 
                     // Campos de entrada
@@ -127,7 +132,8 @@ fun EcraAddDevice(
                         },
                         label = { Text("Marca") },
                         isError = brandError,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isEditing // Apenas editável em modo de adição
                     )
 
                     OutlinedTextField(
@@ -138,7 +144,8 @@ fun EcraAddDevice(
                         },
                         label = { Text("Modelo") },
                         isError = modelError,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isEditing // Apenas editável em modo de adição
                     )
 
                     OutlinedTextField(
@@ -182,22 +189,34 @@ fun EcraAddDevice(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Botão para adicionar dispositivo
+            // Botão para salvar
             Button(
                 onClick = {
                     brandError = brand.isBlank()
                     modelError = model.isBlank()
 
                     if (!brandError && !modelError) {
-                        deviceViewModel.createDevice(
-                            type = type,
-                            brand = brand,
-                            model = model,
-                            description = description,
-                            serialNumber = serialNumber,
-                            assignedTo = if (assignedTo.isBlank()) null else assignedTo,
-                            status = status
-                        )
+                        if (isEditing) {
+                            initialDeviceData?.get("uid")?.let { uid ->
+                                deviceViewModel.updateDevice(
+                                    uid = uid.toString(),
+                                    description = description,
+                                    serialNumber = serialNumber,
+                                    assignedTo = if (assignedTo.isBlank()) null else assignedTo,
+                                    status = status
+                                )
+                            }
+                        } else {
+                            deviceViewModel.createDevice(
+                                type = type,
+                                brand = brand,
+                                model = model,
+                                description = description,
+                                serialNumber = serialNumber,
+                                assignedTo = if (assignedTo.isBlank()) null else assignedTo,
+                                status = status
+                            )
+                        }
                     }
                 },
                 modifier = Modifier
@@ -206,14 +225,17 @@ fun EcraAddDevice(
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
                 Text(
-                    text = "Adicionar Dispositivo",
+                    text = if (isEditing) "Atualizar Dispositivo" else "Adicionar Dispositivo",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             }
 
+            // Lógica para redirecionamento baseado no resultado
             LaunchedEffect(resultMessage) {
-                if (resultMessage.startsWith("Dispositivo criado com sucesso")) {
+                if (resultMessage.startsWith("Dispositivo atualizado com sucesso") && isEditing) {
+                    onDeviceUpdated()
+                } else if (resultMessage.startsWith("Dispositivo criado com sucesso") && !isEditing) {
                     onDeviceAdded()
                 }
             }
@@ -250,6 +272,4 @@ fun DropdownMenu(
         }
     }
 }
-
-
 

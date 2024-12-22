@@ -6,15 +6,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.font.FontWeight
 import com.computacaomovel.devicemanagement.device.DeviceViewModel
 
 @Composable
@@ -23,12 +25,16 @@ fun EcraInformation(
     deviceId: String?,
     deviceViewModel: DeviceViewModel,
     onBack: () -> Unit,
-    onDeleteDevice: () -> Unit
+    onDeleteDevice: () -> Unit,
+    onUpdateDevice: () -> Unit // Callback para atualização
 ) {
-    // Busca o dispositivo com base no ID
-    val device = remember(deviceId) {
-        deviceViewModel.deviceList.value?.find { it["uid"].toString() == deviceId }
+    // Atualiza a lista de dispositivos sempre que o `deviceId` muda
+    LaunchedEffect(deviceId) {
+        deviceViewModel.getDevice()
     }
+
+    // Busca o dispositivo com base no ID
+    val device = deviceViewModel.deviceList.observeAsState().value?.find { it["uid"].toString() == deviceId }
 
     var collaboratorName by remember { mutableStateOf<String?>(null) }
 
@@ -52,6 +58,15 @@ fun EcraInformation(
                     }
                 },
                 actions = {
+                    // Botão de atualizar
+                    IconButton(onClick = onUpdateDevice) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Atualizar",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    // Botão de eliminar
                     IconButton(onClick = onDeleteDevice) {
                         Icon(
                             imageVector = Icons.Default.Delete,
@@ -99,14 +114,6 @@ fun EcraInformation(
                     Spacer(modifier = Modifier.height(16.dp))
                     InformationRow("Colaborador", collaboratorName ?: "-")
                 }
-            } else {
-                // Caso o dispositivo não seja encontrado
-                Text(
-                    text = "Dispositivo não encontrado.",
-                    color = Color.Red,
-                    fontSize = 16.sp,
-                    modifier = Modifier.align(Alignment.Center)
-                )
             }
         }
     }

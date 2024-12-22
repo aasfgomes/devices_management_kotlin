@@ -51,20 +51,21 @@ class MainActivity : ComponentActivity() {
             .build()
 
         googleSignInClient = GoogleSignIn.getClient(this, gso).apply {
-            signOut() // Força a sair para pedir sempre a conta google
+            signOut() // Força a sair para pedir sempre a conta Google
         }
 
         setContent {
             DeviceManagementTheme {
                 val navController = rememberNavController()
 
-                // Observa o estado de autenticação do utilizador
-                userViewModel.isAuthenticated.observe(this) { isAuthenticated ->
-                    if (isAuthenticated) {
+                // Observa o estado de autenticação e dados do utilizador
+                val isAuthenticated = userViewModel.isAuthenticated.observeAsState(initial = false).value
+                val userData = userViewModel.userData.observeAsState().value
+
+                LaunchedEffect(isAuthenticated, userData) {
+                    if (isAuthenticated && userData != null) {
                         navController.navigate(Destino.Ecra01.route) {
-                            popUpTo("login") {
-                                inclusive = true
-                            } // Limpa o histórico ao navegar para o Home
+                            popUpTo("login") { inclusive = true }
                         }
                     }
                 }
@@ -86,9 +87,7 @@ class MainActivity : ComponentActivity() {
                 val account = task.result
                 val idToken = account.idToken
                 if (idToken != null) {
-                    userViewModel.authenticateWithGoogle(idToken) {
-                        // Autenticação bem-sucedida
-                    }
+                    userViewModel.authenticateWithGoogle(idToken) { }
                 }
             } else {
                 userViewModel.updateResultMessage("Google Sign-In failed: ${task.exception?.message}")
@@ -110,40 +109,17 @@ class MainActivity : ComponentActivity() {
     ) {
         val userData = userViewModel.userData.observeAsState().value
         val userType = userData?.type
-        val isAuthenticated = userViewModel.isAuthenticated.observeAsState(initial = false).value
 
-        // Define os destinos dinamicamente com base no tipo de utilizador
-        val destinos = remember(userType) {
-            if (userType == "user") {
-                listOf(
-                    Destino.Ecra01, // Home
-                    Destino.Ecra03  // Perfil
-                )
-            } else {
-                Destino.toList // Para admin ou outros tipos de utilizadores
-            }
-        }
-
-        // Lógica para navegação inicial baseada no estado de autenticação
-        LaunchedEffect(isAuthenticated) {
-            if (isAuthenticated) {
-                navController.navigate(Destino.Ecra01.route) {
-                    popUpTo("login") { inclusive = true } // Redireciona para Home se autenticado
-                }
-            } else {
-                navController.navigate("login") {
-                    popUpTo(0) // Limpa toda a pilha de navegação ao redirecionar para login
-                }
-            }
+        val destinos = if (userType == "user") {
+            listOf(Destino.Ecra01, Destino.Ecra03)
+        } else {
+            Destino.toList
         }
 
         Scaffold(
             bottomBar = {
-                val currentRoute =
-                    navController.currentBackStackEntryAsState().value?.destination?.route
-
-                // Mostra a barra de navegação apenas se autenticado e a rota atual for válida
-                if (isAuthenticated && destinos.any { it.route == currentRoute }) {
+                val currentRoute = navController.currentBackStackEntryAsState()?.value?.destination?.route
+                if (userData != null && currentRoute != null && destinos.any { it.route == currentRoute }) {
                     BottomNavigationBar(navController, destinos)
                 }
             }
@@ -161,8 +137,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun BottomNavigationBar(navController: NavController, destinos: List<Destino>) {
         BottomNavigation {
-            val currentRoute =
-                navController.currentBackStackEntryAsState().value?.destination?.route
+            val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
 
             destinos.forEach { destino ->
                 BottomNavigationItem(
@@ -177,8 +152,8 @@ class MainActivity : ComponentActivity() {
                     onClick = {
                         navController.navigate(destino.route) {
                             popUpTo(navController.graph.startDestinationId) { saveState = true }
-                            launchSingleTop = true // Garante que só existe uma instância
-                            restoreState = true // Restaura o estado ao navegar novamente
+                            launchSingleTop = true
+                            restoreState = true
                         }
                     }
                 )
@@ -194,6 +169,9 @@ class MainActivity : ComponentActivity() {
         onGoogleSignIn: () -> Unit,
         padding: PaddingValues
     ) {
+        val userData = userViewModel.userData.observeAsState().value
+        val userType = userData?.type
+
         NavHost(navController, startDestination = "login") {
             composable("login") {
                 LoginScreen(
@@ -207,50 +185,72 @@ class MainActivity : ComponentActivity() {
                     }
                 )
             }
+
+            composable(Destino.Ecra01.route) {
+                Ecra01(
+                    deviceViewModel = deviceViewModel,
+                    navController = navController,
+                    onAddDeviceClick = { navController.navigate("addDevice") }
+                )
+            }
+
+            if (userType == "user") {
+                composable(Destino.Ecra03.route) {
+                    Ecra03(
+                        userViewModel = userViewModel,
+                        onLogout = {
+                            userViewModel.logout()
+                            navController.navigate("login") { popUpTo("login") { inclusive = true } }
+                        }
+                    )
+                }
+            } else {
+                composable(Destino.Ecra02.route) {
+                    Ecra02()
+                }
+                composable(Destino.Ecra03.route) {
+                    Ecra03(
+                        userViewModel = userViewModel,
+                        onLogout = {
+                            userViewModel.logout()
+                            navController.navigate("login") { popUpTo("login") { inclusive = true } }
+                        }
+                    )
+                }
+            }
+
             composable("register") {
                 UserRegisterScreen(
                     userViewModel = userViewModel,
                     onBackToLogin = { navController.popBackStack("login", inclusive = false) }
                 )
             }
-            composable(Destino.Ecra01.route) {
-                Ecra01(
-                    deviceViewModel = deviceViewModel,
-                    navController = navController, // Passa o navController aqui
-                    onAddDeviceClick = { navController.navigate("addDevice") }
-                )
-            }
-            composable(Destino.Ecra02.route) { Ecra02() }
-            composable(Destino.Ecra03.route) {
-                Ecra03(
-                    userViewModel = userViewModel,
-                    onLogout = {
-                        userViewModel.logout()
-                        navController.navigate("login") { popUpTo("login") { inclusive = true } }
-                    }
-                )
-            }
+
             composable("addDevice") {
                 EcraAddDevice(
                     deviceViewModel = deviceViewModel,
-                    onDeviceAdded = { navController.popBackStack() }, // Voltar após adicionar
-                    //onDeviceUpdated = { navController.popBackStack() }, // Voltar após atualizar
+                    onDeviceAdded = { navController.popBackStack() },
+                    onDeviceUpdated = {},
                     onBack = { navController.popBackStack() }
                 )
             }
 
-            // Navegação para EcraInformation
             composable("deviceInformation/{deviceId}") { backStackEntry ->
                 val deviceId = backStackEntry.arguments?.getString("deviceId")
                 EcraInformation(
                     deviceId = deviceId,
                     deviceViewModel = deviceViewModel,
-                    onBack = { navController.popBackStack() }, // Voltar
+                    onBack = { navController.popBackStack() },
                     onDeleteDevice = {
                         if (deviceId != null) {
                             deviceViewModel.deleteDevice(deviceId) { success ->
-                                if (success) navController.popBackStack() // Volta ao ecrã anterior
+                                if (success) navController.popBackStack()
                             }
+                        }
+                    },
+                    onUpdateDevice = {
+                        if (deviceId != null) {
+                            navController.navigate("editDevice/$deviceId")
                         }
                     }
                 )
@@ -258,16 +258,17 @@ class MainActivity : ComponentActivity() {
 
             composable("editDevice/{deviceId}") { backStackEntry ->
                 val deviceId = backStackEntry.arguments?.getString("deviceId")
+                val initialDeviceData = deviceViewModel.deviceList.value?.find { it["uid"].toString() == deviceId }
+
                 EcraAddDevice(
                     deviceViewModel = deviceViewModel,
-                    onDeviceAdded = { navController.popBackStack() }, // Voltar após adicionar
-                    //onDeviceUpdated = { navController.popBackStack() }, // Voltar após atualizar
+                    onDeviceAdded = { navController.popBackStack() },
+                    onDeviceUpdated = { navController.popBackStack() },
                     onBack = { navController.popBackStack() },
-                    //isEditing = true, // Modo de edição
-                    //initialDeviceData = deviceViewModel.deviceList.value?.find { it["uid"].toString() == deviceId }
+                    isEditing = true,
+                    initialDeviceData = initialDeviceData
                 )
             }
-
         }
     }
 }

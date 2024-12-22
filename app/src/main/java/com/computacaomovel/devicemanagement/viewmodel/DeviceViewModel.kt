@@ -43,45 +43,54 @@ class DeviceViewModel : ViewModel() {
         val logEntry = hashMapOf(
             "operation" to operation,
             "device_uid" to deviceUid,
-            "created_by" to performedBy,
+            "performed_by" to performedBy,
             "timestamp" to System.currentTimeMillis(),
             "details" to details
         )
+
         try {
-            val logsRef = db.collection("logs").document("global_logs")
-            val snapshot = logsRef.get().await()
-            if (!snapshot.exists()) {
-                logsRef.set(hashMapOf("operations" to listOf<Map<String, Any>>())).await()
-            }
-            logsRef.update(
-                "operations",
-                com.google.firebase.firestore.FieldValue.arrayUnion(logEntry)
-            ).await()
+            // Cria ou adiciona a operação ao array de logs
+            db.collection("logs").add(logEntry).await()
         } catch (e: Exception) {
-            throw Exception("Erro ao atualizar o log global: ${e.message}")
+            throw Exception("Erro ao registrar o log global: ${e.message}")
         }
     }
 
-    // Cria um novo dispositivo
-    // Atualize o método `getNextUid` para evitar colisões
-    private suspend fun getNextUid(): String {
-        val snapshot = db.collection("device").get().await()
-        // Gera um UID único baseado em um timestamp ou UUID
-        return System.currentTimeMillis().toString() // Alternativa: UUID.randomUUID().toString()
-    }
     // Método para obter o próximo UID incremental
+    // Método para obter o próximo UID único, garantindo continuidade
     private suspend fun getNextUidDevice(): Int {
-        return try {
-            val snapshot = db.collection("device").get().await()
-            // Busca o maior UID existente e incrementa
-            val maxUid = snapshot.documents
-                .mapNotNull { it.getLong("uid") } // Obtém os UIDs existentes
-                .maxOrNull() ?: 0 // Se não houver UID, começa com 0
-            (maxUid + 1).toInt()
+        try {
+            // Referência para o documento que armazena o último UID
+            val configRef = db.collection("config").document("last_uid")
+
+            // Transação para garantir que o valor seja único e consistente
+            return db.runTransaction { transaction ->
+                // Busca o último UID atribuído
+                val snapshot = transaction.get(configRef)
+
+                // Inicializa o UID se o documento não existir
+                val lastUid = if (snapshot.exists()) {
+                    snapshot.getLong("value") ?: 0
+                } else {
+                    transaction.set(configRef, mapOf("value" to 0))
+                    0
+                }
+
+                // Incrementa o último UID
+                val nextUid = (lastUid + 1).toInt()
+
+                // Atualiza o documento com o novo UID
+                transaction.update(configRef, "value", nextUid)
+
+                // Retorna o novo UID gerado
+                nextUid
+            }.await()
         } catch (e: Exception) {
             throw Exception("Erro ao obter próximo UID: ${e.message}")
         }
     }
+
+
 
     // Função para criar um dispositivo com UID incremental
     fun createDevice(
@@ -199,7 +208,6 @@ class DeviceViewModel : ViewModel() {
         }
     }
 
-    // Remove um dispositivo pelo UID
     fun deleteDevice(deviceId: String?, onComplete: (Boolean) -> Unit) {
         if (deviceId.isNullOrEmpty()) {
             onComplete(false)
@@ -208,7 +216,25 @@ class DeviceViewModel : ViewModel() {
 
         viewModelScope.launch {
             try {
+                val currentUserUid = getCurrentUserUid()
+                if (currentUserUid == null) {
+                    _result.postValue("Erro: Usuário não autenticado.")
+                    onComplete(false)
+                    return@launch
+                }
+
+                // Remover o dispositivo
                 db.collection("device").document(deviceId).delete().await()
+
+                // Atualizar os logs globais
+                updateGlobalLog(
+                    operation = "delete",
+                    deviceUid = deviceId,
+                    performedBy = currentUserUid,
+                    details = mapOf("message" to "Dispositivo removido")
+                )
+
+                // Atualizar a lista local
                 _deviceList.value = _deviceList.value?.filterNot { it["uid"].toString() == deviceId }
                 _result.postValue("Dispositivo removido com sucesso!")
                 onComplete(true)
@@ -218,6 +244,7 @@ class DeviceViewModel : ViewModel() {
             }
         }
     }
+
 
     fun updateDevice(
         uid: String,
@@ -279,6 +306,10 @@ class DeviceViewModel : ViewModel() {
             }
         }
     }
+
+
+
+
 
 
 }
