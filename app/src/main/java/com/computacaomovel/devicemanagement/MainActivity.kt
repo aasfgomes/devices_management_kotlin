@@ -110,10 +110,11 @@ class MainActivity : ComponentActivity() {
         val userData = userViewModel.userData.observeAsState().value
         val userType = userData?.type
 
-        val destinos = if (userType == "user") {
-            listOf(Destino.Ecra01, Destino.Ecra03)
-        } else {
+        val destinos = if (userType != "user") {
             Destino.toList
+        } else {
+            listOf(Destino.Ecra01, Destino.Ecra03)
+
         }
 
         Scaffold(
@@ -141,12 +142,7 @@ class MainActivity : ComponentActivity() {
 
             destinos.forEach { destino ->
                 BottomNavigationItem(
-                    icon = {
-                        Icon(
-                            painterResource(id = destino.icon),
-                            contentDescription = destino.title
-                        )
-                    },
+                    icon = {},
                     label = { Text(destino.title) },
                     selected = currentRoute == destino.route,
                     onClick = {
@@ -160,6 +156,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
 
     @Composable
     fun AppNavigation(
