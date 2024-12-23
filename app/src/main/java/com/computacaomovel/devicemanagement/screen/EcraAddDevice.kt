@@ -1,6 +1,5 @@
 package com.computacaomovel.devicemanagement.screen
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -11,11 +10,8 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+
 import com.computacaomovel.devicemanagement.device.DeviceViewModel
 
 @Composable
@@ -54,7 +50,7 @@ fun EcraAddDevice(
             TopAppBar(
                 title = {
                     Text(
-                        text = if (isEditing) "Editar Dispositivo" else "Adicionar Novo Dispositivo",
+                        text = if (isEditing) "Editar Dispositivo" else "Adicionar Dispositivo",
                         style = MaterialTheme.typography.titleMedium
                     )
                 },
@@ -93,7 +89,7 @@ fun EcraAddDevice(
                 )
             }
 
-            // Card de entrada de dados
+            // Card de entrada dos dados
             Card(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -106,7 +102,7 @@ fun EcraAddDevice(
                         .fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // Dropdown Tipo (não editável em modo edição)
+                    // Dropdown (não editável em modo edição)
                     OutlinedTextField(
                         value = type,
                         onValueChange = { },
@@ -120,7 +116,7 @@ fun EcraAddDevice(
                             )
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        enabled = !isEditing // Apenas editável em modo de adição
+                        enabled = !isEditing // Apenas editável em modo de add
                     )
 
                     // Campos de entrada
@@ -133,7 +129,7 @@ fun EcraAddDevice(
                         label = { Text("Marca") },
                         isError = brandError,
                         modifier = Modifier.fillMaxWidth(),
-                        enabled = !isEditing // Apenas editável em modo de adição
+                        enabled = !isEditing // Apenas editável em modo de add
                     )
 
                     OutlinedTextField(
@@ -145,7 +141,7 @@ fun EcraAddDevice(
                         label = { Text("Modelo") },
                         isError = modelError,
                         modifier = Modifier.fillMaxWidth(),
-                        enabled = !isEditing // Apenas editável em modo de adição
+                        enabled = !isEditing // Apenas editável em modo de add
                     )
 
                     OutlinedTextField(
@@ -189,7 +185,7 @@ fun EcraAddDevice(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Botão para salvar
+            // Botão para guardar
             Button(
                 onClick = {
                     brandError = brand.isBlank()

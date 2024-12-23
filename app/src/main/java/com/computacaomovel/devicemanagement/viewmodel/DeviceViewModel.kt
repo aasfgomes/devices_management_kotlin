@@ -32,6 +32,23 @@ class DeviceViewModel : ViewModel() {
         return auth.currentUser?.uid
     }
 
+    private val _userType = MutableLiveData<String>("user") // Valor padrão "user"
+    val userType: LiveData<String> get() = _userType
+
+    fun setUserType(type: String) {
+        _userType.value = type
+    }
+
+    fun fetchUserType() {
+        viewModelScope.launch {
+            val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+            if (currentUserId != null) {
+                val userSnapshot = db.collection("user").document(currentUserId).get().await()
+                val type = userSnapshot.getString("type") ?: "user"
+                _userType.value = type
+            }
+        }
+    }
 
     // Atualiza os logs globais no Firestore
     private suspend fun updateGlobalLog(
@@ -65,7 +82,7 @@ class DeviceViewModel : ViewModel() {
 
             // Transação para garantir que o valor seja único e consistente
             return db.runTransaction { transaction ->
-                // Busca o último UID atribuído
+                // Vai buscar o último UID atribuído
                 val snapshot = transaction.get(configRef)
 
                 // Inicializa o UID se o documento não existir
@@ -91,7 +108,6 @@ class DeviceViewModel : ViewModel() {
     }
 
 
-
     // Função para criar um dispositivo com UID incremental
     fun createDevice(
         type: String,
@@ -106,7 +122,7 @@ class DeviceViewModel : ViewModel() {
             try {
                 val currentUserUid = getCurrentUserUid()
                 if (currentUserUid == null) {
-                    _result.postValue("Erro: Usuário não autenticado.")
+                    _result.postValue("Erro: Utilizador não autenticado.")
                     return@launch
                 }
 
@@ -164,8 +180,7 @@ class DeviceViewModel : ViewModel() {
     }
 
 
-
-    // Busca a lista de dispositivos
+    // Vai buscar a lista de dispositivos
     fun getDevice() {
         viewModelScope.launch {
             try {
@@ -181,7 +196,7 @@ class DeviceViewModel : ViewModel() {
                     _result.value = "Nenhum dispositivo encontrado."
                 }
             } catch (e: Exception) {
-                _result.value = "Erro ao buscar dispositivos: ${e.message}"
+                _result.value = "Erro ao procurar dispositivos: ${e.message}"
             }
         }
     }
@@ -191,7 +206,7 @@ class DeviceViewModel : ViewModel() {
         _result.value = ""
     }
 
-    // Busca o nome de um colaborador pelo UID
+    // Procura o nome de um colaborador pelo UID
     fun getCollaboratorName(uid: String, callback: (String?) -> Unit) {
         viewModelScope.launch {
             try {
@@ -218,7 +233,7 @@ class DeviceViewModel : ViewModel() {
             try {
                 val currentUserUid = getCurrentUserUid()
                 if (currentUserUid == null) {
-                    _result.postValue("Erro: Usuário não autenticado.")
+                    _result.postValue("Erro: Utilizador não autenticado.")
                     onComplete(false)
                     return@launch
                 }
@@ -257,7 +272,7 @@ class DeviceViewModel : ViewModel() {
             try {
                 val currentUserUid = getCurrentUserUid()
                 if (currentUserUid == null) {
-                    _result.postValue("Erro: Usuário não autenticado.")
+                    _result.postValue("Erro: Utilizador não autenticado.")
                     return@launch
                 }
 
@@ -307,9 +322,31 @@ class DeviceViewModel : ViewModel() {
         }
     }
 
+    suspend fun getLogs(): List<Map<String, Any>> {
+        return try {
+            val snapshot = db.collection("logs").get().await() // Obtém todos os documentos da coleção logs
+            snapshot.documents.mapNotNull { it.data } // Converte os documentos em mapas de dados
+        } catch (e: Exception) {
+            throw Exception("Erro ao carregar os logs: ${e.message}")
+        }
+    }
 
+    private val _logs = MutableLiveData<List<Map<String, Any>>>()
+    val logs: LiveData<List<Map<String, Any>>> = _logs
 
-
-
+    fun fetchLogs() {
+        viewModelScope.launch {
+            try {
+                val logsData = getLogs()
+                _logs.postValue(logsData)
+            } catch (e: Exception) {
+                _result.postValue("Erro ao carregar os logs: ${e.message}")
+            }
+        }
+    }
 
 }
+
+
+
+

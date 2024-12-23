@@ -60,16 +60,6 @@ fun UserRegisterScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Logótipo
-            val logo: Painter = painterResource(id = R.drawable.onis_logo)
-            Image(
-                painter = logo,
-                contentDescription = "Logo Omatapalo",
-                contentScale = ContentScale.Fit,
-                modifier = Modifier
-                    .size(120.dp) // Tamanho da imagem
-                    .padding(bottom = 24.dp)
-            )
 
             // Título do registo
             Text(
@@ -160,7 +150,7 @@ fun UserRegisterScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Botão para registar o utilizador
+            // Botão para registar o user
             Button(
                 onClick = {
                     if (password.value == confirmPassword.value) {

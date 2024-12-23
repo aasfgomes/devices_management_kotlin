@@ -69,7 +69,7 @@ fun Ecra03(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Informações do Utilizador
+                    // Informações do user
                     UserInfoRow(label = "Username", value = userData.username)
                     UserInfoRow(label = "Email", value = userData.email)
                     UserInfoRow(label = "Type", value = userData.type)

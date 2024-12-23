@@ -206,8 +206,9 @@ class MainActivity : ComponentActivity() {
                 }
             } else {
                 composable(Destino.Ecra02.route) {
-                    Ecra02()
+                    Ecra02(deviceViewModel = deviceViewModel)
                 }
+
                 composable(Destino.Ecra03.route) {
                     Ecra03(
                         userViewModel = userViewModel,

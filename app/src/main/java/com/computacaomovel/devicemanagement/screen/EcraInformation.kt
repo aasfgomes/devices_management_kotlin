@@ -31,10 +31,14 @@ fun EcraInformation(
     // Atualiza a lista de dispositivos sempre que o `deviceId` muda
     LaunchedEffect(deviceId) {
         deviceViewModel.getDevice()
+        deviceViewModel.fetchUserType() // Garante que o tipo do usuário seja carregado
     }
 
     // Busca o dispositivo com base no ID
     val device = deviceViewModel.deviceList.observeAsState().value?.find { it["uid"].toString() == deviceId }
+
+    // Obtém o tipo de usuário do ViewModel
+    val userType = deviceViewModel.userType.observeAsState(initial = "user").value
 
     var collaboratorName by remember { mutableStateOf<String?>(null) }
 
@@ -58,21 +62,22 @@ fun EcraInformation(
                     }
                 },
                 actions = {
-                    // Botão de atualizar
-                    IconButton(onClick = onUpdateDevice) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Atualizar",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    // Botão de eliminar
-                    IconButton(onClick = onDeleteDevice) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Eliminar",
-                            tint = MaterialTheme.colorScheme.error
-                        )
+                    // Mostra os botões apenas se o tipo de utilizador não for "user"
+                    if (userType != "user") {
+                        IconButton(onClick = onUpdateDevice) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Atualizar",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        IconButton(onClick = onDeleteDevice) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Eliminar",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
                     }
                 }
             )
@@ -104,15 +109,15 @@ fun EcraInformation(
                     )
 
                     // Exibe os campos do dispositivo
-                    InformationRow("UID", device["uid"]?.toString() ?: "-")
-                    InformationRow("Tipo", device["type"]?.toString() ?: "-")
-                    InformationRow("Marca", device["brand"]?.toString() ?: "-")
-                    InformationRow("Modelo", device["model"]?.toString() ?: "-")
-                    InformationRow("Descrição", device["description"]?.toString() ?: "Sem descrição")
-                    InformationRow("Número de Série", device["serial_number"]?.toString() ?: "-")
-                    InformationRow("Status", device["status"]?.toString() ?: "-")
+                    InformationRowDevice("UID", device["uid"]?.toString() ?: "-")
+                    InformationRowDevice("Tipo", device["type"]?.toString() ?: "-")
+                    InformationRowDevice("Marca", device["brand"]?.toString() ?: "-")
+                    InformationRowDevice("Modelo", device["model"]?.toString() ?: "-")
+                    InformationRowDevice("Descrição", device["description"]?.toString() ?: "Sem descrição")
+                    InformationRowDevice("Número de Série", device["serial_number"]?.toString() ?: "-")
+                    InformationRowDevice("Status", device["status"]?.toString() ?: "-")
                     Spacer(modifier = Modifier.height(16.dp))
-                    InformationRow("Colaborador", collaboratorName ?: "-")
+                    InformationRowDevice("Colaborador", collaboratorName ?: "-")
                 }
             }
         }
@@ -120,7 +125,7 @@ fun EcraInformation(
 }
 
 @Composable
-fun InformationRow(label: String, value: String) {
+fun InformationRowDevice(label: String, value: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
