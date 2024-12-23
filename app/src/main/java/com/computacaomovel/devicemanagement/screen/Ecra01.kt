@@ -136,7 +136,7 @@ fun Ecra01(
         }
 
         // Botão de adicionar
-        if (userType != "user") { // Exibe o botão apenas se o tipo de utilizador não for "user"
+        if (userType != "user") { // Mostra o botão apenas se o tipo de utilizador não for "user" * type != user * muito + fácil desta maneira dado que só temos user e admin
             FloatingActionButton(
                 onClick = onAddDeviceClick,
                 modifier = Modifier
@@ -154,6 +154,9 @@ fun Ecra01(
     }
 }
 
+// Função responsável por renderizar uma célula no cabeçalho da tabela.
+// - `text`: O texto a ser exibido na célula do cabeçalho.
+// - `modifier`: Modificador usado para aplicar estilos ou layout à célula.
 @Composable
 fun TableHeaderCell(text: String, modifier: Modifier) {
     Text(
@@ -166,6 +169,9 @@ fun TableHeaderCell(text: String, modifier: Modifier) {
     )
 }
 
+// renderiza uma linha da tabela para um dispositivo específico.
+// - device: Um mapa que tem os dados do dispositivo (ex.: UID, tipo, modelo, status).
+// - navController: Controlador de navegação usada para navegar para a página de info.
 @Composable
 fun DeviceTableRow(device: Map<String, Any>, navController: NavController) {
     Row(
@@ -187,6 +193,9 @@ fun DeviceTableRow(device: Map<String, Any>, navController: NavController) {
     }
 }
 
+// renderiza uma célula na linha da tabela.
+// - text: O texto a ser mostrada em cada célula.
+// - modifier: Modifier usado para aplicar estilos ou layout às células.
 @Composable
 fun TableCell(text: String, modifier: Modifier) {
     Text(

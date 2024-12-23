@@ -84,7 +84,7 @@ fun ExpandableLogCard(log: Map<String, Any>, deviceViewModel: DeviceViewModel) {
     var isExpanded by remember { mutableStateOf(false) }
     val collaboratorName = remember { mutableStateOf("-") }
 
-    // Buscar o nome do colaborador com base no UID
+    // Procura o nome do colaborador cpelo uid dele
     LaunchedEffect(log["performed_by"]) {
         val performedBy = log["performed_by"]?.toString() ?: ""
         if (performedBy.isNotBlank()) {
@@ -112,7 +112,7 @@ fun ExpandableLogCard(log: Map<String, Any>, deviceViewModel: DeviceViewModel) {
         ) {
             // Título do cartão (sempre visível)
             Text(
-                text = "Operação: ${log["operation"] ?: "Desconhecida"}",
+                text = "Operação: ${log["operation"] ?: "Desconhecido"}",
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
                 color = MaterialTheme.colorScheme.primary

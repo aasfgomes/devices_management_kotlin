@@ -31,7 +31,7 @@ fun EcraInformation(
     // Atualiza a lista de dispositivos sempre que o `deviceId` muda
     LaunchedEffect(deviceId) {
         deviceViewModel.getDevice()
-        deviceViewModel.fetchUserType() // Garante que o tipo do usuário seja carregado
+        deviceViewModel.fetchUserType() // Garante que o tipo do user seja carregado * preciso disto para conseguir manipular os botões *
     }
 
     // Busca o dispositivo com base no ID
@@ -42,7 +42,7 @@ fun EcraInformation(
 
     var collaboratorName by remember { mutableStateOf<String?>(null) }
 
-    // Busca o nome do colaborador
+    // Vai buscar o nome do colaborador com base no assigned_to * em vez de ver o uid dele, vamos buscar o nome *
     LaunchedEffect(device) {
         val assignedTo = device?.get("assigned_to")?.toString()
         if (!assignedTo.isNullOrEmpty()) {
@@ -62,7 +62,7 @@ fun EcraInformation(
                     }
                 },
                 actions = {
-                    // Mostra os botões apenas se o tipo de utilizador não for "user"
+                    // Mostra os botões apenas se o tipo de utilizador não for user
                     if (userType != "user") {
                         IconButton(onClick = onUpdateDevice) {
                             Icon(
@@ -99,7 +99,7 @@ fun EcraInformation(
                         .padding(16.dp),
                     horizontalAlignment = Alignment.Start
                 ) {
-                    // Título da seção
+                    // Título
                     Text(
                         text = "Informações do Dispositivo",
                         fontSize = 20.sp,
@@ -108,7 +108,7 @@ fun EcraInformation(
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
 
-                    // Exibe os campos do dispositivo
+                    // Mostra os campos do dispositivo
                     InformationRowDevice("UID", device["uid"]?.toString() ?: "-")
                     InformationRowDevice("Tipo", device["type"]?.toString() ?: "-")
                     InformationRowDevice("Marca", device["brand"]?.toString() ?: "-")

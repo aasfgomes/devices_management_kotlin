@@ -74,7 +74,6 @@ class DeviceViewModel : ViewModel() {
     }
 
     // Método para obter o próximo UID incremental
-    // Método para obter o próximo UID único, garantindo continuidade
     private suspend fun getNextUidDevice(): Int {
         try {
             // Referência para o documento que armazena o último UID
@@ -180,7 +179,7 @@ class DeviceViewModel : ViewModel() {
     }
 
 
-    // Vai buscar a lista de dispositivos
+    // Vai buscar a lista de dispositivos *  == select * from ** *
     fun getDevice() {
         viewModelScope.launch {
             try {
@@ -324,7 +323,7 @@ class DeviceViewModel : ViewModel() {
 
     suspend fun getLogs(): List<Map<String, Any>> {
         return try {
-            val snapshot = db.collection("logs").get().await() // Obtém todos os documentos da coleção logs
+            val snapshot = db.collection("logs").get().await() // Obtém todos os documentos da coleção -> logs
             snapshot.documents.mapNotNull { it.data } // Converte os documentos em mapas de dados
         } catch (e: Exception) {
             throw Exception("Erro ao carregar os logs: ${e.message}")

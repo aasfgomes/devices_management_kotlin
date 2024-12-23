@@ -14,6 +14,8 @@ import androidx.compose.ui.unit.dp
 
 import com.computacaomovel.devicemanagement.device.DeviceViewModel
 
+// Reutilizamos esta página para o Editar, não faz sentido ter uma página praticamente igual quando podemos usar a mesma com specs diferentes //
+
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun EcraAddDevice(
@@ -227,7 +229,7 @@ fun EcraAddDevice(
                 )
             }
 
-            // Lógica para redirecionamento baseado no resultado
+            // Lógica para redirecionamento com base no resultado
             LaunchedEffect(resultMessage) {
                 if (resultMessage.startsWith("Dispositivo atualizado com sucesso") && isEditing) {
                     onDeviceUpdated()
