@@ -28,16 +28,16 @@ fun EcraInformation(
     onDeleteDevice: () -> Unit,
     onUpdateDevice: () -> Unit // Callback para atualização
 ) {
-    // Atualiza a lista de dispositivos sempre que o `deviceId` muda
+    // Atualiza a lista de dispositivos sempre que o deviceId muda
     LaunchedEffect(deviceId) {
         deviceViewModel.getDevice()
         deviceViewModel.fetchUserType() // Garante que o tipo do user seja carregado * preciso disto para conseguir manipular os botões *
     }
 
-    // Busca o dispositivo com base no ID
+    // Procura o dispositivo com base no ID
     val device = deviceViewModel.deviceList.observeAsState().value?.find { it["uid"].toString() == deviceId }
 
-    // Obtém o tipo de usuário do ViewModel
+    // Obtém o tipo de user do ViewModel
     val userType = deviceViewModel.userType.observeAsState(initial = "user").value
 
     var collaboratorName by remember { mutableStateOf<String?>(null) }

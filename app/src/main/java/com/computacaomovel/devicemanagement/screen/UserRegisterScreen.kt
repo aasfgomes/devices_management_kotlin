@@ -11,7 +11,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -48,6 +47,12 @@ fun UserRegisterScreen(
     val confirmPassword = remember { mutableStateOf("") } // Confirmação de Password
     val result = userViewModel.result // Resultado
 
+    // Variáveis para mensagens de erro
+    val usernameError = remember { mutableStateOf<String?>(null) }
+    val emailError = remember { mutableStateOf<String?>(null) }
+    val passwordError = remember { mutableStateOf<String?>(null) }
+    val confirmPasswordError = remember { mutableStateOf<String?>(null) }
+
     // Layout principal do ecra
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -75,8 +80,12 @@ fun UserRegisterScreen(
             // Campo de input para o nome de user
             OutlinedTextField(
                 value = username.value, // Valor atual
-                onValueChange = { username.value = it }, // Atualiza o valor
+                onValueChange = {
+                    username.value = it
+                    usernameError.value = null
+                }, // Atualiza o valor
                 label = { Text("Username") }, // Label do campo
+                isError = usernameError.value != null, // Define estado de erro
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp),
@@ -88,12 +97,19 @@ fun UserRegisterScreen(
                 maxLines = 1, // Apenas 1 linha
                 singleLine = true // Define que é uma única linha
             )
+            usernameError.value?.let {
+                Text(text = it, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
+            }
 
             // Campo de input para o email
             OutlinedTextField(
                 value = email.value,
-                onValueChange = { email.value = it },
+                onValueChange = {
+                    email.value = it
+                    emailError.value = null
+                },
                 label = { Text("Email") },
+                isError = emailError.value != null,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp),
@@ -105,12 +121,19 @@ fun UserRegisterScreen(
                 maxLines = 1,
                 singleLine = true
             )
+            emailError.value?.let {
+                Text(text = it, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
+            }
 
             // Campo de input para a password
             OutlinedTextField(
                 value = password.value,
-                onValueChange = { password.value = it },
+                onValueChange = {
+                    password.value = it
+                    passwordError.value = null
+                },
                 label = { Text("Password") },
+                isError = passwordError.value != null,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp),
@@ -126,12 +149,19 @@ fun UserRegisterScreen(
                 maxLines = 1,
                 singleLine = true
             )
+            passwordError.value?.let {
+                Text(text = it, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
+            }
 
             // Campo de input para confirmar a password
             OutlinedTextField(
                 value = confirmPassword.value,
-                onValueChange = { confirmPassword.value = it },
+                onValueChange = {
+                    confirmPassword.value = it
+                    confirmPasswordError.value = null
+                },
                 label = { Text("Confirmar Password") },
+                isError = confirmPasswordError.value != null,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp),
@@ -147,21 +177,43 @@ fun UserRegisterScreen(
                 maxLines = 1,
                 singleLine = true
             )
+            confirmPasswordError.value?.let {
+                Text(text = it, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
             // Botão para registar o user
             Button(
                 onClick = {
-                    if (password.value == confirmPassword.value) {
-                        // Regista o user se as passwords forem iguais
+                    var isValid = true
+                    if (username.value.isBlank()) {
+                        usernameError.value = "O campo 'Username' é obrigatório"
+                        isValid = false
+                    }
+                    if (email.value.isBlank()) {
+                        emailError.value = "O campo 'Email' é obrigatório"
+                        isValid = false
+                    }
+                    if (password.value.isBlank()) {
+                        passwordError.value = "O campo 'Password' é obrigatório"
+                        isValid = false
+                    }
+                    if (confirmPassword.value.isBlank()) {
+                        confirmPasswordError.value = "O campo 'Confirmar Password' é obrigatório"
+                        isValid = false
+                    }
+                    if (password.value != confirmPassword.value) {
+                        confirmPasswordError.value = "As passwords não são iguais"
+                        isValid = false
+                    }
+
+                    if (isValid) {
+                        // Regista o user se todos os campos forem válidos
                         userViewModel.registerNewUser(username.value, password.value, email.value) {
-                            // Redireciona para a página de login se sucesso
-                            onBackToLogin() // Chama a função para navegar para o login após o registo bem-sucedido
+                            // Redireciona para a página de login em caso de sucesso
+                            onBackToLogin()
                         }
-                    } else {
-                        // Atualiza a mensagem de erro se as passwords forem diferentes
-                        userViewModel.updateResultMessage("As passwords não são iguais")
                     }
                 },
                 modifier = Modifier
@@ -218,4 +270,3 @@ fun UserRegisterScreen(
         }
     }
 }
-

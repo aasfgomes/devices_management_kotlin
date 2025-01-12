@@ -11,7 +11,6 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-
 import com.computacaomovel.devicemanagement.device.DeviceViewModel
 
 // Reutilizamos esta página para o Editar, não faz sentido ter uma página praticamente igual quando podemos usar a mesma com specs diferentes //
@@ -130,8 +129,7 @@ fun EcraAddDevice(
                         },
                         label = { Text("Marca") },
                         isError = brandError,
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = !isEditing // Apenas editável em modo de add
+                        modifier = Modifier.fillMaxWidth()
                     )
 
                     OutlinedTextField(
@@ -142,8 +140,7 @@ fun EcraAddDevice(
                         },
                         label = { Text("Modelo") },
                         isError = modelError,
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = !isEditing // Apenas editável em modo de add
+                        modifier = Modifier.fillMaxWidth()
                     )
 
                     OutlinedTextField(
@@ -190,11 +187,14 @@ fun EcraAddDevice(
             // Botão para guardar
             Button(
                 onClick = {
+                    // Validação para verificar se os campos obrigatórios estão preenchidos
                     brandError = brand.isBlank()
                     modelError = model.isBlank()
 
+                    // Apenas vai se os campos obrigatórios não tiverem erros
                     if (!brandError && !modelError) {
                         if (isEditing) {
+                            // atualizar um dispositivo existente
                             initialDeviceData?.get("uid")?.let { uid ->
                                 deviceViewModel.updateDevice(
                                     uid = uid.toString(),
@@ -205,6 +205,7 @@ fun EcraAddDevice(
                                 )
                             }
                         } else {
+                            // Lógica para criar um novo dispositivo
                             deviceViewModel.createDevice(
                                 type = type,
                                 brand = brand,
@@ -270,4 +271,3 @@ fun DropdownMenu(
         }
     }
 }
-

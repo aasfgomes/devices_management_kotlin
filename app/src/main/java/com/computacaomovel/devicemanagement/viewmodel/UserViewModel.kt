@@ -52,7 +52,6 @@ class UserViewModel : ViewModel() {
      * @param password Palavra-passe do user.
      * @param onSuccess Callback a ser chamado em caso de sucesso.
      */
-
     fun authenticate(username: String, password: String, onSuccess: () -> Unit) {
         viewModelScope.launch {
             try {
@@ -69,14 +68,11 @@ class UserViewModel : ViewModel() {
 
                     // Atualiza os dados do utilizador
                     val document = documents.documents.first()
-                    val userId = document.id
-                    val fetchedUsername = document.getString("username") ?: "-"
-                    val fetchedEmail = document.getString("email") ?: "-"
-
-                    _userData.postValue(UserData(fetchedUsername, fetchedEmail)) // Atualiza o LiveData
                     auth.signInWithEmailAndPassword(document.getString("email") ?: "", password).await()
 
-                    println(" pok -> Username: $fetchedUsername, Email: $fetchedEmail")
+                    // Após autenticação, vai buscar o user, preciso disto para saber o que mostrar em termos de ecras
+                    getCurrentUserData()
+
                     onSuccess() // Navega para o ecra principal
                 } else {
                     _result.value = "Authentication failed."
@@ -89,13 +85,11 @@ class UserViewModel : ViewModel() {
         }
     }
 
-
     /**
      * Autentica o user com uma conta Google.
      * @param idToken Token de autenticação Google.
      * @param onSuccess Callback a ser chamado em caso de sucesso.
      */
-
     fun authenticateWithGoogle(idToken: String, onSuccess: () -> Unit) {
         viewModelScope.launch {
             try {
@@ -116,7 +110,10 @@ class UserViewModel : ViewModel() {
 
                     _result.value = "Authentication with Google successful!"
                     _isAuthenticated.value = true
-                    _userData.postValue(UserData(user.displayName ?: "-", user.email ?: "-"))
+
+                    // Após autenticação, busca os dados completos do utilizador
+                    getCurrentUserData()
+
                     onSuccess()
                 }
             } catch (e: Exception) {
@@ -126,7 +123,6 @@ class UserViewModel : ViewModel() {
         }
     }
 
-
     /**
      * Regista um novo user na aplicação.
      * @param username Nome de utilizador.
@@ -135,7 +131,6 @@ class UserViewModel : ViewModel() {
      * @param onSuccess Callback a ser chamado em caso de sucesso.
      */
     fun registerNewUser(username: String, password: String, email: String, onSuccess: () -> Unit) {
-
         val hashedPassword = hashPassword(password) // Hash da password
 
         auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener { task ->
@@ -154,6 +149,10 @@ class UserViewModel : ViewModel() {
                     .addOnSuccessListener {
                         _result.value = "Registration successful!" // Sucesso
                         _isRegistered.value = true
+
+                        // Após registro, busca os dados completos do utilizador
+                        getCurrentUserData()
+
                         onSuccess()
                     }
                     .addOnFailureListener {
@@ -167,36 +166,20 @@ class UserViewModel : ViewModel() {
         }
     }
 
-
-
     /**
      * Hash para password SHA-256.
      * @param password pw.
      * @return Palavra-passe já encriptada.
      */
-
-    /**
-     * Obtém os dados do utilizador autenticado a partir do Firestore.
-     */
-
-    // Classe para guardar os dados do user
-    data class UserData(
-        val username: String,
-        val email: String,
-        val type: String = "user" // Campo type adicionado com default * isto está hardcoded, de outra maneira rebentava logo *
-    )
-
-
-    // Estado exposto para os dados do users
-    private val _userData = MutableLiveData<UserData>()
-    val userData: LiveData<UserData> = _userData
-
     private fun hashPassword(password: String): String {
         val md = MessageDigest.getInstance("SHA-256") // Instância do SHA-256
         val hash = md.digest(password.toByteArray()) // Hash os bytes da palavra-passe
         return hash.joinToString("") { "%02x".format(it) } // Retorna em formato hexadecimal
     }
 
+    /**
+     * Obtém os dados do utilizador autenticado a partir do Firestore.
+     */
     fun getCurrentUserData() {
         val currentUser = auth.currentUser
 
@@ -220,7 +203,6 @@ class UserViewModel : ViewModel() {
         }
     }
 
-
     fun logout() {
         auth.signOut() // Desloga o utilizador no Firebase
         _userData.postValue(UserData("-", "-")) // Limpa os dados do user
@@ -228,6 +210,14 @@ class UserViewModel : ViewModel() {
         _result.value = "" // Limpa mensagens de resultado
     }
 
+    // Classe para guardar os dados do user
+    data class UserData(
+        val username: String,
+        val email: String,
+        val type: String = "user" // Campo type adicionado com default * isto está hardcoded, de outra maneira rebentava logo *
+    )
 
-
+    // Estado exposto para os dados do users
+    private val _userData = MutableLiveData<UserData>()
+    val userData: LiveData<UserData> = _userData
 }

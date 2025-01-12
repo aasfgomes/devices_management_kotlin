@@ -293,9 +293,9 @@ class DeviceViewModel : ViewModel() {
                 val updatedFields = mutableMapOf<String, Any>(
                     "description" to (description ?: ""),
                     "serial_number" to (serialNumber ?: ""),
-                    "assigned_to" to (assignedTo ?: ""),
+                    "assigned_to" to (assignedTo ?: ""), // Mantém o valor, mesmo que seja vazio
                     "status" to status
-                ).filter { (_, value) -> value.toString().isNotBlank() } // Apenas valores válidos
+                )
 
                 if (updatedFields.isEmpty()) {
                     _result.postValue("Erro: Nenhuma alteração detectada.")
@@ -304,6 +304,8 @@ class DeviceViewModel : ViewModel() {
 
                 // Atualização no Firestore
                 db.collection("device").document(uid).update(updatedFields).await()
+
+                getDevice()
 
                 // Atualizar logs globais
                 updateGlobalLog(
@@ -345,7 +347,3 @@ class DeviceViewModel : ViewModel() {
     }
 
 }
-
-
-
-
